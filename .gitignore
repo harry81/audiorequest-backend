@@ -114,3 +114,4 @@ Pipfile
 .DS_Store
 config/settings_loca.py
 /zappa_settings.json
+/gac.json
