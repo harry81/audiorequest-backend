@@ -60,12 +60,18 @@ ROOT_URLCONF = 'main.urls'
 # CORS Config
 
 CORS_ORIGIN_WHITELIST = (
+    'backend.hoodpub.com',
+    'www.hoodpub.com',
     '.ap-northeast-2.amazonaws.com',
+    '.hoodpub.com',
+    'www.hoodpub.com.s3-website.ap-northeast-2.amazonaws.com',
     'localhost',
-    'localhost:4200'
+    'localhost:4200',
+    '172.16.1.151:4200'
 )
 
 ALLOWED_HOSTS = CORS_ORIGIN_WHITELIST
+
 
 TEMPLATES = [
     {
