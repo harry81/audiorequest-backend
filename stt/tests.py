@@ -1,3 +1,16 @@
-from django.test import TestCase
+from rest_framework.test import APITransactionTestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from stt.utils import send_email
 
-# Create your tests here.
+
+class SttTests(APITransactionTestCase):
+
+    def test_basic(self):
+        # url = '/stt/'
+        # test_file = SimpleUploadedFile("test.wav", b"file_content", content_type="audio/wav")
+        # response = self.client.post(url, dict(audio=test_file))
+        self.assertTrue(True)
+
+    def test_send_email(self):
+        send_email(to_addresses=['n_pointer@naver.com'],
+                   subject='subject from test', text='content', html='<b>hello</b>')

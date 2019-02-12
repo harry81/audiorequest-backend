@@ -1,10 +1,10 @@
 import os
+
 import boto3
+from django.conf import settings
 
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import enums, types
-from django.conf import settings
-
 
 GAC_PATH = 'google_application/feisty-bindery-117412-c4cf0e8c8240.json'
 client = speech.SpeechClient()
@@ -43,3 +43,33 @@ def transcribe(filename=None):
         print('Confidence: {}'.format(result.alternatives[0].confidence))
         res.append(result.alternatives[0].transcript)
     return res
+
+
+def send_email(from_address='chharry@gmail.com',
+               to_addresses=['chharry@gmail.com'],
+               subject='stt test', text='body', html='html'):
+    ses = boto3.client('ses', 'us-east-1')
+
+    response = ses.send_email(
+        Destination={
+            'ToAddresses': to_addresses,
+        },
+        Message={
+            'Body': {
+                'Html': {
+                    'Charset': 'UTF-8',
+                    'Data': html,
+                },
+                'Text': {
+                    'Charset': 'UTF-8',
+                    'Data': text,
+                },
+            },
+            'Subject': {
+                'Charset': 'UTF-8',
+                'Data': subject,
+            },
+        },
+        Source=from_address,
+    )
+    print('Sent email to %s | %s' % (to_addresses, response))

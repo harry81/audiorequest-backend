@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'zappa_django_utils',
+    'constance',
 
     'stt'
 ]
@@ -145,6 +146,12 @@ STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 AWS_STORAGE_BUCKET_NAME = os.getenv('BUCKET_NAME', '')
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+CONSTANCE_CONFIG = {
+    'LIMIT_ANONYMOUS': (60, 'Length of audio file for anonymous'),
+    'LIMIT_USER': (60 * 5, 'Length of audio file for users'),
+}
 
 GAC_FILENAME = 'gac.json'
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GAC_FILENAME
