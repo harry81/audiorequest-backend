@@ -1,8 +1,9 @@
 import logging
 
-from rest_framework import status, viewsets
-from rest_framework.response import Response
 from constance import config
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from stt.models import Stt
 from stt.utils import download_GAC
@@ -22,11 +23,14 @@ class SttViewSet(viewsets.ViewSet):
         stt = Stt()
         stt.audio.save(fs.name, fs)
         stt.set_length()
+        return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.audio.url))
 
+    @action(methods=['patch'], detail=True)
+    def transcribe(self, request, pk=None):
+        is_audio = False
         resp = {}
 
-        is_audio = False
-
+        stt = Stt.objects.get(pk=pk)
         for ext in ['wav', 'flac']:
             if stt.audio.name.endswith(ext):
                 is_audio = True
@@ -39,7 +43,12 @@ class SttViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_200_OK, data=dict(resp))
 
         stt.transcribe()
-        stt.notify()
         resp['script'] = stt.script
 
         return Response(status=status.HTTP_200_OK, data=dict(resp))
+
+    @action(methods=['patch'], detail=True)
+    def notify(self, request, pk=None):
+        stt = Stt.objects.get(pk=pk)
+        stt.notify()
+        return Response(status=status.HTTP_200_OK, data=dict(ok=True))
