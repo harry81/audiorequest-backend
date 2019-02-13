@@ -35,14 +35,8 @@ def transcribe(filename=None):
 
     print('Waiting for operation to complete...')
     response = response.result(timeout=90)
-    res = []
 
-    for result in response.results:
-        # The first alternative is the most likely one for this portion.
-        print(u'Transcript: {}'.format(result.alternatives[0].transcript))
-        print('Confidence: {}'.format(result.alternatives[0].confidence))
-        res.append(result.alternatives[0].transcript)
-    return res
+    return response
 
 
 def send_email(from_address='chharry@gmail.com',

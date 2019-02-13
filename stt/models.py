@@ -29,9 +29,9 @@ class Stt(models.Model):
         self.save()
 
     def transcribe(self):
-        res = transcribe(filename=self.audio.name)
-        script = "\n".join(res)
-        self.script = script
+        response = transcribe(filename=self.audio.name)
+
+        self.script = "\n".join([result.alternatives[0].transcript for result in response.results])
         self.save()
 
     def notify(self):
