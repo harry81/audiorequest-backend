@@ -49,6 +49,15 @@ class SttViewSet(viewsets.ViewSet):
 
     @action(methods=['patch'], detail=True)
     def notify(self, request, pk=None):
+        email = request.POST.get('email')
+
         stt = Stt.objects.get(pk=pk)
-        stt.notify()
-        return Response(status=status.HTTP_200_OK, data=dict(ok=True))
+        res = dict(ok=True)
+
+        try:
+            stt.transcribe()
+            stt.notify(email=email)
+        except Exception as e:
+            res = dict(ok=False, message=e.args[0])
+
+        return Response(status=status.HTTP_200_OK, data=res)

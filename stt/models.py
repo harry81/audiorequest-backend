@@ -34,6 +34,11 @@ class Stt(models.Model):
         self.script = "\n".join([result.alternatives[0].transcript for result in response.results])
         self.save()
 
-    def notify(self):
+    def notify(self, email=None):
+        email = email if email else 'chharry@naver.com'
+
+        if not self.script:
+            raise Exception("Not transcribed")
+
         send_email(subject='Speech to Text',
-                   to_addresses=['n_pointer@naver.com'], html=self.script)
+                   to_addresses=[email], html=self.script)
