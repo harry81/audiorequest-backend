@@ -3,7 +3,16 @@ import wave
 
 from django.db import models
 from django.utils import timezone
-from stt.utils import transcribe, send_email
+
+from stt.utils import send_email, transcribe
+from zappa.async import task
+
+
+@task
+def task_process(pk=None, email=None):
+    stt = Stt.objects.get(pk=pk)
+    stt.transcribe()
+    stt.notify(email=email)
 
 
 class Stt(models.Model):

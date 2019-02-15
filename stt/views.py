@@ -5,8 +5,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from stt.models import Stt
+from stt.models import Stt, task_process
 from stt.utils import download_GAC
+
 
 logger = logging.getLogger(__name__)
 download_GAC()
@@ -52,11 +53,10 @@ class SttViewSet(viewsets.ViewSet):
         email = request.POST.get('email')
 
         stt = Stt.objects.get(pk=pk)
-        res = dict(ok=True)
+        res = dict(ok=True, message='Sent to %s' % email)
 
         try:
-            stt.transcribe()
-            stt.notify(email=email)
+            task_process(pk=stt.id, email=email)
         except Exception as e:
             res = dict(ok=False, message=e.args[0])
 
