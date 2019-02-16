@@ -24,7 +24,8 @@ class SttViewSet(viewsets.ViewSet):
         stt = Stt()
         stt.audio.save(fs.name, fs)
         stt.set_length()
-        return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.audio.url))
+
+        return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.audio.url, size=stt.audio.size))
 
     @action(methods=['patch'], detail=True)
     def transcribe(self, request, pk=None):
@@ -53,7 +54,7 @@ class SttViewSet(viewsets.ViewSet):
         email = request.POST.get('email')
 
         stt = Stt.objects.get(pk=pk)
-        res = dict(ok=True, message='Sent to %s' % email)
+        res = dict(ok=True, message='%d초 내에 %s로 전송이 됩니다.' % (stt.duration, email))
 
         try:
             task_process(pk=stt.id, email=email)

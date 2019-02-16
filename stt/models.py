@@ -4,8 +4,11 @@ import wave
 from django.db import models
 from django.utils import timezone
 
+from pydub import AudioSegment
 from stt.utils import send_email, transcribe
 from zappa.async import task
+
+AudioSegment.converter = './bin/ffmpeg'
 
 
 @task
@@ -21,6 +24,16 @@ class Stt(models.Model):
     script = models.TextField(blank=True, null=True)
     duration = models.FloatField(default=0)
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.audio.name.endswith('mp3'):
+            mp3_file = AudioSegment.from_mp3(self.audio.file)
+            to_filename = self.audio.name.split('/')[-1].replace('mp3', 'wav')
+            mp3_file.export("/tmp/{filename}".format(filename=to_filename), format="wav")
+            with open("/tmp/{filename}".format(filename=to_filename), 'br') as fp:
+                self.audio.save(to_filename, fp)
+
+        super(Stt, self).save(*args, **kwargs)
 
     def __str__(self):
         return '%s' % (self.audio)

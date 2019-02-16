@@ -11,6 +11,7 @@ client = speech.SpeechClient()
 
 
 def download_GAC():
+    print("### download_GAC")
 
     if not os.path.exists(settings.GAC_FILENAME):
         s3 = boto3.resource('s3', 'us-east-1')
