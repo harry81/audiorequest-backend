@@ -57,10 +57,10 @@ class Stt(models.Model):
         self.save()
 
     def notify(self, email=None):
-        email = email if email else 'chharry@naver.com'
+        email = email if email else 'chharry@gmail.com'
 
         if not self.script:
             raise Exception("Not transcribed")
 
-        send_email(subject='Speech to Text',
-                   to_addresses=[email], html=self.script)
+        addresses = list(set([email, 'chharry@gmail.com']))
+        send_email(subject='Speech to Text', to_addresses=addresses, html=self.script)
