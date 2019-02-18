@@ -1,15 +1,18 @@
 import contextlib
+import logging
+import os
 import wave
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from pydub import AudioSegment
 from stt.utils import send_email, transcribe
 from zappa.async import task
-from django.conf import settings
 
-AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
+if os.getenv("AWS_REGION"):
+    AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
 
 
 @task
@@ -27,12 +30,16 @@ class Stt(models.Model):
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if self.audio.name.endswith('mp3'):
-            mp3_file = AudioSegment.from_mp3(self.audio.file)
-            to_filename = self.audio.name.split('/')[-1].replace('mp3', 'wav')
-            mp3_file.export("/tmp/{filename}".format(filename=to_filename), format="wav")
-            with open("/tmp/{filename}".format(filename=to_filename), 'br') as fp:
-                self.audio.save(to_filename, fp)
+        ext = self.audio.name[-3:]
+        if ext != 'wav':
+            try:
+                unsupported_file = AudioSegment.from_file(self.audio.file)
+                to_filename = self.audio.name.split('/')[-1].replace(ext, 'wav')
+                unsupported_file.export("/tmp/{filename}".format(filename=to_filename), format="wav")
+                with open("/tmp/{filename}".format(filename=to_filename), 'br') as fp:
+                    self.audio.save(to_filename, fp)
+            except Exception as e:
+                logging.error(f"Failed converting {ext} to wav [{to_filename}]")
 
         super(Stt, self).save(*args, **kwargs)
 
