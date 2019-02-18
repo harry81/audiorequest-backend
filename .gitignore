@@ -115,3 +115,4 @@ Pipfile
 config/settings_loca.py
 /zappa_settings.json
 /gac.json
+/bin/ffmpeg

@@ -6,11 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from stt.models import Stt, task_process
-from stt.utils import download_GAC
+from stt.utils import download_GAC, download_ffmpeg
 
 
 logger = logging.getLogger(__name__)
 download_GAC()
+download_ffmpeg()
 
 
 class SttViewSet(viewsets.ViewSet):

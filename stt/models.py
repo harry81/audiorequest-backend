@@ -7,8 +7,9 @@ from django.utils import timezone
 from pydub import AudioSegment
 from stt.utils import send_email, transcribe
 from zappa.async import task
+from django.conf import settings
 
-AudioSegment.converter = './bin/ffmpeg'
+AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
 
 
 @task

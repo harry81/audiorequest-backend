@@ -18,6 +18,14 @@ def download_GAC():
         s3.Bucket('hmapps').download_file(GAC_PATH, settings.GAC_FILENAME)
 
 
+def download_ffmpeg():
+    print("### download ffmpeg")
+
+    if not os.path.exists(settings.AUDIO_CONVERTER_PATH):
+        s3 = boto3.resource('s3', 'us-east-1')
+        s3.Bucket('hmapps').download_file('bin/ffmpeg', settings.AUDIO_CONVERTER_PATH)
+
+
 def transcribe(filename=None):
 
     encoding = "LINEAR16" if filename.endswith('wav') else "FLAC"
