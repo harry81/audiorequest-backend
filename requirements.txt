@@ -11,3 +11,5 @@ grpcio==1.18.0
 django-constance==2.3.1
 django-picklefield==2.0
 sentry-sdk==0.7.2
+Fabric3==1.14.post1
+pydub==0.23.1

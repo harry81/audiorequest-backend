@@ -6,12 +6,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from stt.models import Stt, task_process
-from stt.utils import download_GAC, download_ffmpeg
 
 
 logger = logging.getLogger(__name__)
-download_GAC()
-download_ffmpeg()
 
 
 class SttViewSet(viewsets.ViewSet):
@@ -22,9 +19,12 @@ class SttViewSet(viewsets.ViewSet):
     def create(self, request):
         fs = request.FILES['audio']
 
-        stt = Stt()
-        stt.audio.save(fs.name, fs)
-        stt.set_length()
+        try:
+            stt = Stt()
+            stt.audio.save(fs.name, fs)
+            stt.set_audio_meta()
+        except Exception as e:
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
 
         return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.audio.url, size=stt.audio.size))
 
@@ -53,12 +53,14 @@ class SttViewSet(viewsets.ViewSet):
     @action(methods=['patch'], detail=True)
     def notify(self, request, pk=None):
         email = request.POST.get('email')
+        language = request.POST.get('language', 'en-GB')
+        channel = request.POST.get('channel', 1)
 
         stt = Stt.objects.get(pk=pk)
         res = dict(ok=True, message='%d초 내에 %s로 전송이 됩니다.' % (stt.duration, email))
 
         try:
-            task_process(pk=stt.id, email=email)
+            task_process(pk=stt.id, email=email, language=language, channel=channel)
         except Exception as e:
             res = dict(ok=False, message=e.args[0])
 

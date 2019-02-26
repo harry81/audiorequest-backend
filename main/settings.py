@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '1h0&lx4!+=xw4r(n1v2q88zb!8a49l=v@u^ehi5eywzb+&^5hw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("AWS_SESSION_TOKEN") == None
 
 ALLOWED_HOSTS = []
 
@@ -153,6 +153,7 @@ sentry_sdk.init(
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_STORAGE_BUCKET_NAME = os.getenv('BUCKET_NAME', '')
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
@@ -163,5 +164,9 @@ CONSTANCE_CONFIG = {
 }
 
 GAC_FILENAME = 'gac.json'
+
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GAC_FILENAME
-AUDIO_CONVERTER_PATH = './bin/ffmpeg'
+AUDIO_CONVERTER_PATH = 'bin/ffmpeg'
+AUDIO_FFPROBE_PATH = 'bin/ffprobe'
+AUDIO_EXT = 'wav'
+DEFAULT_EMAIL_ADDRESS = "chharry@gmail.com"

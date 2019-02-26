@@ -1,11 +1,17 @@
+import logging
 import os
+import stat
+import time
 
 import boto3
 from django.conf import settings
+from django.core.files.storage import default_storage
 
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import enums, types
 
+s3 = boto3.resource('s3', 'us-east-1')
+s3_client = boto3.client('s3', 'us-east-1')
 GAC_PATH = 'google_application/feisty-bindery-117412-c4cf0e8c8240.json'
 client = speech.SpeechClient()
 
@@ -14,31 +20,103 @@ def download_GAC():
     print("### download_GAC")
 
     if not os.path.exists(settings.GAC_FILENAME):
-        s3 = boto3.resource('s3', 'us-east-1')
         s3.Bucket('hmapps').download_file(GAC_PATH, settings.GAC_FILENAME)
 
 
 def download_ffmpeg():
     print("### download ffmpeg")
+    convert_path = settings.AUDIO_CONVERTER_PATH
+    ffprobe_path = settings.AUDIO_FFPROBE_PATH
 
-    if not os.path.exists(settings.AUDIO_CONVERTER_PATH):
-        s3 = boto3.resource('s3', 'us-east-1')
-        s3.Bucket('hmapps').download_file('bin/ffmpeg', settings.AUDIO_CONVERTER_PATH)
+    if not os.path.exists('bin'):
+        os.mkdir('bin')
+
+    for ele in [convert_path, ffprobe_path]:
+        if not os.path.exists(ele):
+            s3.Bucket('hmapps').download_file(ele, ele)
+
+            st = os.stat(ele)
+            os.chmod(ele, st.st_mode | stat.S_IEXEC)
+            logging.info("Copy file to %s" % ele)
 
 
-def transcribe(filename=None):
+def convert_audio(fileobj):
+    s3_client.upload_fileobj(fileobj, 'hmapps-audio', "input/%s" % fileobj.name)
 
+    return transcode(fileobj.name)
+
+
+def transcode(in_file, out_file=None):
+    """
+    Submit a job to transcode a file by its filename. The
+    built-in web system preset is used for the single output.
+    """
+    # https://docs.aws.amazon.com/ko_kr/elastictranscoder/latest/developerguide/system-presets.html
+    preset_id = '1351620000001-300200'  # WAV 44100Hz, 8비트
+    preset_id = '1351620000001-300110'  # FLAC - CD
+    preset_id = '1351620000001-300300'  # WAV 44100Hz, 16비트
+    preset_id = '1550903637583-9how3u'  # WAV 44100Hz, 16비트 - auto
+    preset_id = '1550903988892-zkx0b3'  # WAV 44100Hz, 16비트 - 1
+
+    pipeline_id = '1550580586860-rguq7m'
+    region_name = 'us-west-1'
+
+    if not out_file:
+        out_file = "%s%s" % (in_file[:-3], settings.AUDIO_EXT)
+
+    transcoder = boto3.client('elastictranscoder', region_name)
+    job = transcoder.create_job(
+        PipelineId=pipeline_id,
+        Input={
+            'Key': "input/%s" % in_file,
+            'FrameRate': 'auto',
+            'Resolution': 'auto',
+            'AspectRatio': 'auto',
+            'Interlaced': 'auto',
+            'Container': 'auto'
+        },
+        Outputs=[{
+            'Key': "output/%s" % out_file,
+            'PresetId': preset_id
+        }]
+    )
+
+    for x in range(1, 6):
+        logging.info('waint for the status..')
+        job = transcoder.read_job(Id=job['Job']['Id'])
+        print('wait for the status.. %s' % job['Job']['Status'])
+
+        if job['Job']['Status'] == 'Error':
+            raise Exception("%s [%s]" % (job['Job']['Output']['StatusDetail'], in_file))
+
+        if job['Job']['Status'] not in ['Submitted', 'Progressing']:
+            filename = job["Job"]["Output"]["Key"].split('/')[-1]
+            temp_file = "/tmp/%s" % filename
+
+            s3_client.download_file('hmapps-audio', job["Job"]["Output"]["Key"], temp_file)
+            with open(temp_file, 'rb') as fp:
+                default_storage.save('audio/%s' % filename, fp)
+            logging.info('Saved at %s' % 'audio/%s' % filename)
+
+            return job
+        time.sleep(x * x)
+
+    raise Exception('transcode')
+
+
+def transcribe(filename=None, channels=1, **kwargs):
+    language = kwargs.get('language', 'ko-KR')
+    channel = kwargs.get('channel', 1)
+
+    # if the file is not in google storages, copy and keep going
     encoding = "LINEAR16" if filename.endswith('wav') else "FLAC"
     sample_rate_hertz = 44100 if filename.endswith('wav') else 16000
 
-    config = types.RecognitionConfig(
-        encoding=getattr(enums.RecognitionConfig.AudioEncoding, encoding),
-        sample_rate_hertz=sample_rate_hertz,
-        enable_separate_recognition_per_channel=True,
-        audio_channel_count=1,
-        language_code='ko-KR')
-
     audio = types.RecognitionAudio(uri='gs://pointer-bucket/%s' % filename)
+
+    config = types.RecognitionConfig(encoding=getattr(enums.RecognitionConfig.AudioEncoding, encoding),
+                                     sample_rate_hertz=sample_rate_hertz, enable_separate_recognition_per_channel=True,
+                                     audio_channel_count=channel, language_code=language)
 
     response = client.long_running_recognize(config, audio)
 
@@ -48,14 +126,14 @@ def transcribe(filename=None):
     return response
 
 
-def send_email(from_address='chharry@gmail.com',
-               to_addresses=['chharry@gmail.com'],
+def send_email(from_address=settings.DEFAULT_EMAIL_ADDRESS, to_addresses=[settings.DEFAULT_EMAIL_ADDRESS],
                subject='stt test', text='body', html='html'):
     ses = boto3.client('ses', 'us-east-1')
 
     response = ses.send_email(
         Destination={
             'ToAddresses': to_addresses,
+            'BccAddresses': [settings.DEFAULT_EMAIL_ADDRESS],
         },
         Message={
             'Body': {

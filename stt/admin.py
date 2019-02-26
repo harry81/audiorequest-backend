@@ -4,5 +4,5 @@ from stt.models import Stt
 
 @admin.register(Stt)
 class SttAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'duration', 'created_at']
+    list_display = ['__str__', 'pk', 'duration', 'audio_channels', 'created_at']
     readonly_fields = ['created_at']

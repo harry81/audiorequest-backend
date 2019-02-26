@@ -1,5 +1,4 @@
 from rest_framework.test import APITransactionTestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
 from stt.utils import send_email
 
 
