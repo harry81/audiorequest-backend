@@ -5,11 +5,10 @@ from stt.utils import send_email
 class SttTests(APITransactionTestCase):
 
     def test_basic(self):
-        # url = '/stt/'
-        # test_file = SimpleUploadedFile("test.wav", b"file_content", content_type="audio/wav")
-        # response = self.client.post(url, dict(audio=test_file))
-        self.assertTrue(True)
+        url = '/stt/info/'
+        response = self.client.get(url, format='json')
+        self.assertIn('limit_anonymous', response.json())
 
-    def test_send_email(self):
-        send_email(to_addresses=['n_pointer@naver.com'],
-                   subject='subject from test', text='content', html='<b>hello</b>')
+    # def test_send_email(self):
+    #     send_email(to_addresses=['n_pointer@naver.com'],
+    #                subject='subject from test', text='content', html='<b>hello</b>')

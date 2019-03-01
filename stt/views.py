@@ -1,12 +1,12 @@
 import logging
 
 from constance import config
+from main import __version__
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from stt.models import Stt, task_process
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,14 @@ class SttViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
 
         return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.audio.url, size=stt.audio.size))
+
+    @action(methods=['get'], detail=False)
+    def info(self, request, pk=None):
+        data = dict(ok=True, version=__version__,
+                    limit_anonymous=config.LIMIT_ANONYMOUS,
+                    limit_user=config.LIMIT_USER)
+
+        return Response(status=status.HTTP_200_OK, data=data)
 
     @action(methods=['patch'], detail=True)
     def transcribe(self, request, pk=None):
