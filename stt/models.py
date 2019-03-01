@@ -1,5 +1,6 @@
 import contextlib
 import logging
+import uuid
 import wave
 
 from django.conf import settings
@@ -26,6 +27,7 @@ class Stt(models.Model):
     audio_type = models.CharField(max_length=8, null=True, blank=True)
     audio_channels = models.IntegerField(default=1)
     lang_code = models.CharField(max_length=8, default='ko-KR')
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     script = models.TextField(blank=True, null=True)
     duration = models.FloatField(default=0)
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)

@@ -16,6 +16,14 @@ class SttViewSet(viewsets.ViewSet):
     def list(self, request):
         return Response(status=status.HTTP_200_OK, data=dict(ok=True))
 
+    def retrieve(self, request, pk=None):
+        stt = Stt.objects.get(uuid=pk)
+        res = stt.__dict__.copy()
+        res.pop('_state')
+        data = dict(ok=True, stt=res)
+
+        return Response(status=status.HTTP_200_OK, data=data)
+
     def create(self, request):
         fs = request.FILES['audio']
 
