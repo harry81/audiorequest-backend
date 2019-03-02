@@ -1,5 +1,5 @@
 import logging
-
+from django.core.exceptions import ValidationError
 from constance import config
 from main import __version__
 from rest_framework import status, viewsets
@@ -17,7 +17,15 @@ class SttViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_200_OK, data=dict(ok=True))
 
     def retrieve(self, request, pk=None):
-        stt = Stt.objects.get(uuid=pk)
+        try:
+            stt = Stt.objects.get(uuid=pk)
+
+        except ValidationError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=dict(ok=False, message=e.messages))
+
+        except Stt.DoesNotExist as e:
+            return Response(status=status.HTTP_404_NOT_FOUND, data=dict(ok=False, message='No Stt'))
+
         res = stt.__dict__.copy()
         res.pop('_state')
         data = dict(ok=True, stt=res)

@@ -40,13 +40,15 @@ def _sanity_check(force=False, env='staging'):
 def stt_backend_deploy(force=False, env='staging', test=True, notice=True):
     pycodestyle()
     local('zappa update {env}_stt'.format(**dict(env=env)))
+    local('zappa manage {env}_stt migrate'.format(**dict(env=env)))
 
 
 def stt_frontend_deploy(force=False, env='staging'):
     with prefix("cd ../frontend/;. %s/bin/activate" % DEV_VIRTUAL_ENV):
-        local("ng build --configuration=%s" % env)
-        local("aws s3 rm s3://www.hoodpub.com --recursive".format(**conf_frontend[env]))
-        local("aws s3 cp dist/stt-frontend s3://{subdomain}.hoodpub.com --recursive".format(**conf_frontend[env]))
+        local("ng build --configuration=%s" % 'prod')
+        local("aws s3 rm s3://{subdomain}.hoodpub.com --recursive".format(**conf_frontend[env]))
+        local("aws s3 cp dist/stt-frontend s3://{subdomain}.hoodpub.com --recursive  --acl public-read".
+              format(**conf_frontend[env]))
         local("aws configure set preview.cloudfront true")
         local("aws cloudfront create-invalidation --distribution-id {distribution_id} --paths '/*'".
               format(**conf_frontend[env]))
