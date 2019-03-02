@@ -104,7 +104,7 @@ def transcode(in_file, out_file=None):
     raise Exception('transcode')
 
 
-def transcribe(filename=None, channels=1, **kwargs):
+def transcribe(filename=None, **kwargs):
     language = kwargs.get('language', 'ko-KR')
     channel = kwargs.get('channel', 1)
 

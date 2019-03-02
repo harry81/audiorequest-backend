@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '1h0&lx4!+=xw4r(n1v2q88zb!8a49l=v@u^ehi5eywzb+&^5hw'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debu gturned on in production!
 DEBUG = os.getenv("AWS_SESSION_TOKEN") == None
 
 ALLOWED_HOSTS = []
@@ -66,6 +66,7 @@ ROOT_URLCONF = 'main.urls'
 CORS_ORIGIN_WHITELIST = (
     'backend.hoodpub.com',
     'www.hoodpub.com',
+    'staging-backend.hoodpub.com',
     '.ap-northeast-2.amazonaws.com',
     '.hoodpub.com',
     'www.hoodpub.com.s3-website.ap-northeast-2.amazonaws.com',
@@ -99,14 +100,15 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+dbname = "%sdb-stt" % ('staging-' if 'staging' in os.getenv('AWS_LAMBDA_LOG_GROUP_NAME', "") else "")
+
 DATABASES = {
     'default': {
         'ENGINE': 'zappa_django_utils.db.backends.s3sqlite',
-        'NAME': 'db-stt',
+        'NAME': dbname,
         'BUCKET': 'hmapps-db'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators

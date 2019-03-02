@@ -1,5 +1,5 @@
 from rest_framework.test import APITransactionTestCase
-from stt.utils import send_email
+# from stt.utils import send_email
 
 
 class SttTests(APITransactionTestCase):
