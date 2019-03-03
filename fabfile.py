@@ -45,7 +45,7 @@ def stt_backend_deploy(force=False, env='staging', test=True, notice=True):
 
 def stt_frontend_deploy(force=False, env='staging'):
     with prefix("cd ../frontend/;. %s/bin/activate" % DEV_VIRTUAL_ENV):
-        local("ng build --configuration=%s" % 'prod')
+        local("ng build --configuration=%s" % env)
         local("aws s3 rm s3://{subdomain}.hoodpub.com --recursive".format(**conf_frontend[env]))
         local("aws s3 cp dist/stt-frontend s3://{subdomain}.hoodpub.com --recursive  --acl public-read".
               format(**conf_frontend[env]))

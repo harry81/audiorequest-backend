@@ -114,9 +114,16 @@ def transcribe(filename=None, **kwargs):
 
     audio = types.RecognitionAudio(uri='gs://pointer-bucket/%s' % filename)
 
-    config = types.RecognitionConfig(encoding=getattr(enums.RecognitionConfig.AudioEncoding, encoding),
-                                     sample_rate_hertz=sample_rate_hertz, enable_separate_recognition_per_channel=True,
-                                     audio_channel_count=channel, language_code=language)
+    # https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1
+    config = types.RecognitionConfig(
+        encoding=getattr(enums.RecognitionConfig.AudioEncoding, encoding),
+        sample_rate_hertz=sample_rate_hertz, enable_separate_recognition_per_channel=True,
+        enable_word_time_offsets=True,
+        enable_automatic_punctuation=True,
+        enable_speaker_diarization=True,
+        model='default',
+        alternative_language_codes=['en-US'],
+        audio_channel_count=channel, language_code=language)
 
     response = client.long_running_recognize(config, audio)
 
