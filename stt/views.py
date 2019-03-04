@@ -42,7 +42,7 @@ class SttViewSet(viewsets.ViewSet):
         except Exception as e:
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
 
-        return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.audio.url, size=stt.audio.size))
+        return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.hearable_audio_url, size=stt.audio.size))
 
     @action(methods=['get'], detail=False)
     def info(self, request, pk=None):
@@ -81,7 +81,7 @@ class SttViewSet(viewsets.ViewSet):
         channel = request.POST.get('channel', 1)
 
         stt = Stt.objects.get(pk=pk)
-        res = dict(ok=True, message='%d초 내에 %s로 전송이 됩니다.' % (stt.duration, email))
+        res = dict(ok=True, message='%d초 내에 %s로 전송이 됩니다.' % (round(stt.duration, -1) + 10, email))
 
         try:
             task_process(pk=stt.id, email=email, language=language, channel=channel)

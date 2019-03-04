@@ -50,6 +50,15 @@ class Stt(models.Model):
     def audio_name(self):
         return "%s%s" % (self.audio.name[:-3], settings.AUDIO_EXT)
 
+    @property
+    def hearable_audio_url(self):
+        ext = self.audio.name[-3:]
+
+        if ext in ['amr']:
+            return default_storage.url(self.audio.name.replace(ext, settings.AUDIO_EXT))
+
+        return self.audio.url
+
     def set_audio_meta(self):
         with contextlib.closing(wave.open(default_storage.open(self.audio_name, 'r'))) as f:
             frames = f.getnframes()
