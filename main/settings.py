@@ -64,8 +64,9 @@ ROOT_URLCONF = 'main.urls'
 # CORS Config
 
 CORS_ORIGIN_WHITELIST = (
-    'backend.hoodpub.com',
     'www.hoodpub.com',
+    'backend.hoodpub.com',
+    'staging.hoodpub.com',
     'staging-backend.hoodpub.com',
     '.ap-northeast-2.amazonaws.com',
     '.hoodpub.com',

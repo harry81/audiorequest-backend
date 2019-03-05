@@ -66,7 +66,9 @@ class SttViewSet(viewsets.ViewSet):
         channel = request.POST.get('channel', 1)
 
         stt = Stt.objects.get(pk=pk)
-        res = dict(ok=True, message='%d초 내에 %s로 전송이 됩니다.' % (round(stt.duration, -1) + 10, email))
+        message = '성공적으로 요청이 되었습니다'\
+                  '%d초 내에 %s로 전송이 됩니다.' % (round(stt.duration, -1) + 10, email)
+        res = dict(ok=True, message=message)
 
         try:
             task_process(pk=stt.id, email=email, language=language, channel=channel)
