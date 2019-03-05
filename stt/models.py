@@ -18,7 +18,9 @@ AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
 @task
 def task_process(pk=None, email=None, **kwargs):
     stt = Stt.objects.get(pk=pk)
-    stt.transcribe(**kwargs)
+    if not stt.script:
+        stt.transcribe(**kwargs)
+
     stt.notify(email=email)
 
 

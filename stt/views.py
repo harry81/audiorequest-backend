@@ -33,16 +33,23 @@ class SttViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_200_OK, data=data)
 
     def create(self, request):
-        fs = request.FILES['audio']
+        fs = request.FILES.get('audio')
 
-        try:
-            stt = Stt()
-            stt.audio.save(fs.name, fs)
-            stt.set_audio_meta()
-        except Exception as e:
-            return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
+        if fs:
+            try:
+                stt = Stt.objects.filter(audio__contains=fs.name).first()
+                if not stt:
+                    stt = Stt()
+                    stt.audio.save(fs.name, fs)
+                    stt.set_audio_meta()
 
-        return Response(status=status.HTTP_200_OK, data=dict(id=stt.id, path=stt.hearable_audio_url, size=stt.audio.size))
+            except Exception as e:
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
+        else:
+            stt = Stt.objects.first()
+
+        return Response(status=status.HTTP_200_OK,
+                        data=dict(id=stt.id, path=stt.hearable_audio_url, size=stt.audio.size))
 
     @action(methods=['get'], detail=False)
     def info(self, request, pk=None):
@@ -51,28 +58,6 @@ class SttViewSet(viewsets.ViewSet):
                     limit_user=config.LIMIT_USER)
 
         return Response(status=status.HTTP_200_OK, data=data)
-
-    @action(methods=['patch'], detail=True)
-    def transcribe(self, request, pk=None):
-        is_audio = False
-        resp = {}
-
-        stt = Stt.objects.get(pk=pk)
-        for ext in ['wav', 'flac']:
-            if stt.audio.name.endswith(ext):
-                is_audio = True
-
-        if stt.duration > config.LIMIT_ANONYMOUS:
-            resp['script'] = '%d 초 이하의 wav 파일만 가능합니다요 : %d' % (config.LIMIT_ANONYMOUS, stt.duration)
-            return Response(status=status.HTTP_200_OK, data=dict(resp))
-
-        if not is_audio:
-            return Response(status=status.HTTP_200_OK, data=dict(resp))
-
-        stt.transcribe()
-        resp['script'] = stt.script
-
-        return Response(status=status.HTTP_200_OK, data=dict(resp))
 
     @action(methods=['patch'], detail=True)
     def notify(self, request, pk=None):

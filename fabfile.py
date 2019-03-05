@@ -61,5 +61,6 @@ def stt_deploy(force=False, env='staging', component='both'):
 
     if component in ['frontend', 'both']:
         stt_frontend_deploy(**kwargs)
+
     if component in ['backend', 'both']:
         stt_backend_deploy(**kwargs)
