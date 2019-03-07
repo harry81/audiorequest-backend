@@ -23,7 +23,7 @@ class SttViewSet(viewsets.ViewSet):
         except ValidationError as e:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=dict(ok=False, message=e.messages))
 
-        except Stt.DoesNotExist as e:
+        except Stt.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND, data=dict(ok=False, message='No Stt'))
 
         res = stt.__dict__.copy()
@@ -46,7 +46,11 @@ class SttViewSet(viewsets.ViewSet):
             except Exception as e:
                 return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
         else:
-            stt = Stt.objects.first()
+            sample_filename = 'stt_sample'
+            stt = Stt.objects.filter(audio__contains=sample_filename).first()
+            if not stt:
+                return Response(status=status.HTTP_404_NOT_FOUND,
+                                data=dict(message="No sample containing containing [%s]" % sample_filename))
 
         return Response(status=status.HTTP_200_OK,
                         data=dict(id=stt.id, path=stt.hearable_audio_url, size=stt.audio.size))
@@ -66,8 +70,8 @@ class SttViewSet(viewsets.ViewSet):
         channel = request.POST.get('channel', 1)
 
         stt = Stt.objects.get(pk=pk)
-        message = '성공적으로 요청이 되었습니다'\
-                  '%d초 내에 %s로 전송이 됩니다.' % (round(stt.duration, -1) + 10, email)
+        message = '성공적으로 요청이 되었습니다. '\
+                  '곧(%d초 내) %s에서 내용확인이 가능합니다.' % (round(stt.duration, -1) + 10, email)
         res = dict(ok=True, message=message)
 
         try:
