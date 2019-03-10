@@ -15,3 +15,6 @@ Fabric3==1.14.post1
 pydub==0.23.1
 pycodestyle==2.5.0
 vulture==1.0
+-e git://github.com/harry81/naver_api@master#egg=naver_api
+lxml==4.3.2
+requests==2.21.0

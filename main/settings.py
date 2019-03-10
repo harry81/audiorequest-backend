@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'zappa_django_utils',
     'constance',
 
-    'stt'
+    'stt',
+    'joonggonara'
 ]
 
 MIDDLEWARE = [
