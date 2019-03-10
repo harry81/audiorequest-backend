@@ -9,11 +9,13 @@ from django.core.files.storage import default_storage
 
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import enums, types
+from google.api_core.exceptions import GoogleAPICallError
 
 s3 = boto3.resource('s3', 'us-east-1')
 s3_client = boto3.client('s3', 'us-east-1')
 GAC_PATH = 'google_application/feisty-bindery-117412-c4cf0e8c8240.json'
 client = speech.SpeechClient()
+logger = logging.getLogger(__name__)
 
 
 def download_GAC():
@@ -128,7 +130,10 @@ def transcribe(filename=None, **kwargs):
     response = client.long_running_recognize(config, audio)
 
     print('Waiting for operation to complete...')
-    response = response.result(timeout=90)
+    try:
+        response = response.result(timeout=90)
+    except GoogleAPICallError as e:
+        logger.error(e, filename)
 
     return response
 
@@ -161,3 +166,54 @@ def send_email(from_address=settings.DEFAULT_EMAIL_ADDRESS, to_addresses=[settin
         Source=from_address,
     )
     print('Sent email to %s | %s' % (to_addresses, response))
+
+
+def synthesize_text(text, language_code='en-US', filename='output.wav'):
+    """Synthesizes speech from the input string of text."""
+    from google.cloud import texttospeech
+    client = texttospeech.TextToSpeechClient()
+
+    input_text = texttospeech.types.SynthesisInput(text=text)
+
+    # https://cloud.google.com/text-to-speech/docs/reference/rpc/google.cloud.texttospeech.v1beta1#google.cloud.texttospeech.v1beta1
+    voice = texttospeech.types.VoiceSelectionParams(
+        language_code=language_code,
+        ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE)
+
+    audio_config = texttospeech.types.AudioConfig(
+        audio_encoding=texttospeech.enums.AudioEncoding.LINEAR16,
+        sample_rate_hertz=44100)
+
+    response = client.synthesize_speech(input_text, voice, audio_config)
+
+    # The response's audio_content is binary.
+    with open(filename, 'wb') as out:
+        out.write(response.audio_content)
+        print('Audio content written to file "output.mp3" %s' % language_code)
+
+
+def list_voices():
+    """Lists the available voices."""
+    from google.cloud import texttospeech
+    from google.cloud.texttospeech import enums
+    client = texttospeech.TextToSpeechClient()
+
+    # Performs the list voices request
+    voices = client.list_voices()
+
+    for voice in voices.voices:
+        # Display the voice's name. Example: tpc-vocoded
+        print('Name: {}'.format(voice.name))
+
+        # Display the supported language codes for this voice. Example: "en-US"
+        for language_code in voice.language_codes:
+            print('Supported language: {}'.format(language_code))
+
+        ssml_gender = enums.SsmlVoiceGender(voice.ssml_gender)
+
+        # Display the SSML Voice Gender
+        print('SSML Voice Gender: {}'.format(ssml_gender.name))
+
+        # Display the natural sample rate hertz for this voice. Example: 24000
+        print('Natural Sample Rate Hertz: {}\n'.format(
+            voice.natural_sample_rate_hertz))

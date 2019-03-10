@@ -13,11 +13,16 @@ from stt.utils import convert_audio, send_email, transcribe
 from zappa.async import task
 
 AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
+logger = logging.getLogger(__name__)
 
 
 @task
 def task_process(pk=None, email=None, **kwargs):
-    stt = Stt.objects.get(pk=pk)
+    try:
+        stt = Stt.objects.get(pk=pk)
+    except Stt.DoesNotExist as e:
+        logger.error(e)
+
     if not stt.script:
         stt.transcribe(**kwargs)
 
