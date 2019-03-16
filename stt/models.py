@@ -9,7 +9,8 @@ from django.db import models
 from django.utils import timezone
 
 from pydub import AudioSegment
-from stt.utils import convert_audio, send_email, transcribe
+from storages.backends.s3boto3 import S3Boto3Storage
+from stt.utils import send_email, transcode, transcribe
 from zappa.async import task
 
 AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
@@ -30,7 +31,7 @@ def task_process(pk=None, email=None, **kwargs):
 
 
 class Stt(models.Model):
-    audio = models.FileField(upload_to='audio')
+    audio = models.FileField(upload_to='input', storage=S3Boto3Storage(bucket=settings.AWS_AUDIO_STORAGE_BUCKET_NAME))
     audio_type = models.CharField(max_length=8, null=True, blank=True)
     audio_channels = models.IntegerField(default=1)
     lang_code = models.CharField(max_length=8, default='ko-KR')
@@ -40,14 +41,6 @@ class Stt(models.Model):
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        ext = self.audio.name[-3:]
-
-        if ext != settings.AUDIO_EXT and not default_storage.exists(self.audio_name):
-            try:
-                convert_audio(self.audio)
-            except Exception as e:
-                logging.error(e)
-
         super(Stt, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -55,14 +48,14 @@ class Stt(models.Model):
 
     @property
     def audio_name(self):
-        return "%s%s" % (self.audio.name[:-3], settings.AUDIO_EXT)
+        return "%s.%s" % (self.audio.name.split('.')[0], settings.AUDIO_EXT[0])
 
     @property
     def hearable_audio_url(self):
-        ext = self.audio.name[-3:]
+        ext = self.audio.name.split('.')[1]
 
         if ext in ['amr']:
-            return default_storage.url(self.audio.name.replace(ext, settings.AUDIO_EXT))
+            return default_storage.url(self.audio.name.replace(ext, settings.AUDIO_EXT[0]))
 
         return self.audio.url
 
@@ -75,8 +68,42 @@ class Stt(models.Model):
 
         self.save()
 
+    # step1 - transfer
+    # step2 - move
+    # step3 - transcribe
     def transcribe(self, **kwargs):
-        response = transcribe(filename=self.audio_name, **kwargs)
+        # step1
+        from google.cloud import storage
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(settings.GS_BUCKET_NAME)
+
+        is_transfered = False
+        if not self.audio.name.split(".")[1] in settings.AUDIO_EXT:
+            transcribable_filename = "%s.%s" % (self.audio.name.split(".")[0], settings.AUDIO_EXT[0])
+        else:
+            transcribable_filename = self.audio.name
+
+        for ext in settings.AUDIO_EXT:
+            if bucket.get_blob(transcribable_filename):
+                is_transfered = True
+                break
+
+        # step2
+        ext = self.audio.name.split('.')[1]
+
+        if ext not in settings.AUDIO_EXT and not is_transfered and not default_storage.exists(transcribable_filename):
+            try:
+                transcode(self.audio.name)
+            except Exception as e:
+                logging.error(e)
+
+        blob = bucket.blob(transcribable_filename)
+
+        if not blob.exists():
+            blob.upload_from_file(self.audio.storage.open(transcribable_filename))
+
+        # step3
+        response = transcribe(filename=transcribable_filename, **kwargs)
 
         self.script = "\n".join([result.alternatives[0].transcript for result in response.results])
         self.save()

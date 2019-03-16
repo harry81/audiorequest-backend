@@ -5,8 +5,8 @@ from joonggonara.models import Joonggonara
 naver = Naver()
 
 
-def fetch_joonggonara(clubid=10050146):
-    fetches = naver.search(clubid=clubid)
+def fetch_joonggonara():
+    fetches = naver.search(clubid=10050146)
     for ele in fetches:
         jn = Joonggonara(**ele)
         jn.save()

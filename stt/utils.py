@@ -42,12 +42,6 @@ def download_ffmpeg():
             logging.info("Copy file to %s" % ele)
 
 
-def convert_audio(fileobj):
-    s3_client.upload_fileobj(fileobj, 'hmapps-audio', "input/%s" % fileobj.name)
-
-    return transcode(fileobj.name)
-
-
 def transcode(in_file, out_file=None):
     """
     Submit a job to transcode a file by its filename. The
@@ -64,13 +58,13 @@ def transcode(in_file, out_file=None):
     region_name = 'us-west-1'
 
     if not out_file:
-        out_file = "%s%s" % (in_file[:-3], settings.AUDIO_EXT)
+        out_file = "%s.%s" % (in_file.split(".")[0], settings.AUDIO_EXT[0])
 
     transcoder = boto3.client('elastictranscoder', region_name)
     job = transcoder.create_job(
         PipelineId=pipeline_id,
         Input={
-            'Key': "input/%s" % in_file,
+            'Key': in_file,
             'FrameRate': 'auto',
             'Resolution': 'auto',
             'AspectRatio': 'auto',
@@ -78,7 +72,7 @@ def transcode(in_file, out_file=None):
             'Container': 'auto'
         },
         Outputs=[{
-            'Key': "output/%s" % out_file,
+            'Key': out_file,
             'PresetId': preset_id
         }]
     )
@@ -92,14 +86,6 @@ def transcode(in_file, out_file=None):
             raise Exception("%s [%s]" % (job['Job']['Output']['StatusDetail'], in_file))
 
         if job['Job']['Status'] not in ['Submitted', 'Progressing']:
-            filename = job["Job"]["Output"]["Key"].split('/')[-1]
-            temp_file = "/tmp/%s" % filename
-
-            s3_client.download_file('hmapps-audio', job["Job"]["Output"]["Key"], temp_file)
-            with open(temp_file, 'rb') as fp:
-                default_storage.save('audio/%s' % filename, fp)
-            logging.info('Saved at %s' % 'audio/%s' % filename)
-
             return job
         time.sleep(x * x)
 
@@ -109,10 +95,9 @@ def transcode(in_file, out_file=None):
 def transcribe(filename=None, **kwargs):
     language = kwargs.get('language', 'ko-KR')
     channel = kwargs.get('channel', 1)
-
     # if the file is not in google storages, copy and keep going
     encoding = "LINEAR16" if filename.endswith('wav') else "FLAC"
-    sample_rate_hertz = 44100 if filename.endswith('wav') else 16000
+    sample_rate_hertz = 44100  # if filename.endswith('wav') else 16000
 
     audio = types.RecognitionAudio(uri='gs://pointer-bucket/%s' % filename)
 
@@ -220,8 +205,7 @@ def list_voices():
 
 
 def presigned_post(filename):
-
-    post = s3_client.generate_presigned_post(Bucket='hmapps-audio',
-                                             Key='input/%s' % filename)
-
+    key = 'input/%s' % filename.replace(' ', '_')
+    post = s3_client.generate_presigned_post(Bucket='hmapps-audio', Key=key)
+    print(key)
     return post

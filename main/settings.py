@@ -156,9 +156,10 @@ sentry_sdk.init(
 
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_STORAGE_BUCKET_NAME = os.getenv('BUCKET_NAME', '')
+# DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = os.getenv('S3_BUCKET_NAME', 'hmapps')
+AWS_AUDIO_STORAGE_BUCKET_NAME = 'hmapps-audio'
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
@@ -172,5 +173,5 @@ GAC_FILENAME = 'gac.json'
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GAC_FILENAME
 AUDIO_CONVERTER_PATH = 'bin/ffmpeg'
 AUDIO_FFPROBE_PATH = 'bin/ffprobe'
-AUDIO_EXT = 'wav'
+AUDIO_EXT = ['wav', 'flac']
 DEFAULT_EMAIL_ADDRESS = "chharry@gmail.com"

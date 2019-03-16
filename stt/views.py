@@ -35,18 +35,26 @@ class SttViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_200_OK, data=data)
 
     def create(self, request):
-        fs = request.FILES.get('audio')
+        # step1) upload an audio file
+        # step2) transcribe
 
-        if fs:
+        # step1
+        key = request.POST.get('key')
+        email = request.POST.get('email')
+        language = request.POST.get('language', 'en-GB')
+        channel = request.POST.get('channel', 1)
+
+        if key:
             try:
-                stt = Stt.objects.filter(audio__contains=fs.name).first()
+                stt = Stt.objects.filter(audio=key).first()
+
                 if not stt:
-                    stt = Stt()
-                    stt.audio.save(fs.name, fs)
-                    stt.set_audio_meta()
+                    stt = Stt(audio=key)
+                    stt.save()
 
             except Exception as e:
                 return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=dict(ok=False, message=e.args[0]))
+
         else:
             sample_filename = 'stt_sample'
             stt = Stt.objects.filter(audio__contains=sample_filename).first()
@@ -54,8 +62,19 @@ class SttViewSet(viewsets.ViewSet):
                 return Response(status=status.HTTP_404_NOT_FOUND,
                                 data=dict(message="No sample containing containing [%s]" % sample_filename))
 
-        return Response(status=status.HTTP_200_OK,
-                        data=dict(id=stt.id, path=stt.hearable_audio_url, size=stt.audio.size))
+        # step2
+        stt.transcribe()
+
+        message = '성공적으로 요청이 되었습니다. '\
+                  '곧(%d초 내) %s에서 내용확인이 가능합니다.' % (round(stt.duration, -1) + 10, email)
+        res = dict(ok=True, message=message)
+
+        try:
+            task_process(pk=stt.id, email=email, language=language, channel=channel)
+        except Exception as e:
+            res = dict(ok=False, message=e.args[0])
+
+        return Response(status=status.HTTP_200_OK, data=res)
 
     @action(methods=['get'], detail=False)
     def info(self, request, pk=None):
@@ -85,5 +104,5 @@ class SttViewSet(viewsets.ViewSet):
 
     @action(methods=['get'], detail=False)
     def get_presigned_post(self, request):
-        filename = request.POST.get('filename')
-        return presigned_post(filename)
+        filename = request.GET.get('filename')
+        return Response(status=status.HTTP_200_OK, data=presigned_post(filename))
