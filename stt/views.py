@@ -1,12 +1,14 @@
 import logging
-from django.core.exceptions import ValidationError
+
 from constance import config
-from main import __version__
+from django.core.exceptions import ValidationError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from main import __version__
 from stt.models import Stt, task_process
+from stt.utils import presigned_post
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +82,8 @@ class SttViewSet(viewsets.ViewSet):
             res = dict(ok=False, message=e.args[0])
 
         return Response(status=status.HTTP_200_OK, data=res)
+
+    @action(methods=['get'], detail=False)
+    def get_presigned_post(self, request):
+        filename = request.POST.get('filename')
+        return presigned_post(filename)

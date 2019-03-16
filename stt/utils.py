@@ -217,3 +217,11 @@ def list_voices():
         # Display the natural sample rate hertz for this voice. Example: 24000
         print('Natural Sample Rate Hertz: {}\n'.format(
             voice.natural_sample_rate_hertz))
+
+
+def presigned_post(filename):
+
+    post = s3_client.generate_presigned_post(Bucket='hmapps-audio',
+                                             Key='input/%s' % filename)
+
+    return post
