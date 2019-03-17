@@ -5,11 +5,10 @@ import time
 
 import boto3
 from django.conf import settings
-from django.core.files.storage import default_storage
 
+from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import enums, types
-from google.api_core.exceptions import GoogleAPICallError
 
 s3 = boto3.resource('s3', 'us-east-1')
 s3_client = boto3.client('s3', 'us-east-1')

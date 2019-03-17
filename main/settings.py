@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'constance',
 
     'stt',
-    'joonggonara'
+    'joonggonara',
+    'dog'
 ]
 
 MIDDLEWARE = [
