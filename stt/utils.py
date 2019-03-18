@@ -6,7 +6,7 @@ import time
 import boto3
 from django.conf import settings
 
-from google.api_core.exceptions import GoogleAPICallError
+from google.api_core.exceptions import GoogleAPICallError, InvalidArgument
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import enums, types
 
@@ -111,7 +111,11 @@ def transcribe(filename=None, **kwargs):
         alternative_language_codes=['en-US'],
         audio_channel_count=channel, language_code=language)
 
-    response = client.long_running_recognize(config, audio)
+    try:
+        response = client.long_running_recognize(config, audio)
+    except InvalidArgument as e:
+        message = "%s %s" % (e.args[0], audio)
+        raise(Exception(message))
 
     print('Waiting for operation to complete...')
     try:
@@ -204,6 +208,11 @@ def list_voices():
 
 
 def presigned_post(filename):
+    ext = filename.split('.')[1]
+
+    if ext not in ['wav', 'mp3', 'flac']:
+        raise Exception("Audio files are acceptable")
+
     key = 'input/%s' % filename.replace(' ', '_')
     post = s3_client.generate_presigned_post(Bucket='hmapps-audio', Key=key)
     print(key)

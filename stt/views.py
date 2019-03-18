@@ -63,8 +63,6 @@ class SttViewSet(viewsets.ViewSet):
                                 data=dict(message="No sample containing containing [%s]" % sample_filename))
 
         # step2
-        stt.transcribe()
-
         message = '성공적으로 요청이 되었습니다. '\
                   '곧(%d초 내) %s에서 내용확인이 가능합니다.' % (round(stt.duration, -1) + 10, email)
         res = dict(ok=True, message=message)
@@ -105,4 +103,10 @@ class SttViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False)
     def get_presigned_post(self, request):
         filename = request.GET.get('filename')
-        return Response(status=status.HTTP_200_OK, data=presigned_post(filename))
+        try:
+            response = presigned_post(filename)
+        except Exception as e:
+            response = e.args[0]
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=response)
+
+        return Response(status=status.HTTP_200_OK, data=response)

@@ -41,6 +41,9 @@ def stt_backend_deploy(force=False, env='staging', test=True, notice=True):
     pycodestyle()
     local('zappa update {env}_stt'.format(**dict(env=env)))
     local('zappa manage {env}_stt migrate'.format(**dict(env=env)))
+
+
+def stt_collectstatic(env='staging'):
     local('zappa manage {env}_stt "collectstatic --noinput"'.format(**dict(env=env)))
 
 
