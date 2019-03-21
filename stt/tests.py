@@ -7,7 +7,7 @@ from stt.utils import presigned_post
 
 class SttTests(APITransactionTestCase):
 
-    def test_basic(self):
+    def test_get_info(self):
         url = '/stt/info/'
         response = self.client.get(url, format='json')
         self.assertIn('limit_anonymous', response.json())
