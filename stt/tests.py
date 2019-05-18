@@ -110,6 +110,7 @@ class KakaoTests(APITransactionTestCase):
         response = self.client.post(url, data=data, format='json')
 
     def test_post_image(self):
+        uri = 'http://dn-m.talk.kakao.com/talkm/bl29h5I7Vso/58Ts9emhMRxr7mU0h9R2Fk/i_uf0s78xwnb04.png'
         url = '/api/kakao/'
         data = {'action': {'clientExtra': None,
                            'detailParams': {},
@@ -128,7 +129,6 @@ class KakaoTests(APITransactionTestCase):
                                 'user': {'id': 'c0d01a32a8225dfc645e72a5abdd3d1f2c3c826ce797800e0bf25aac0652bf175c',
                                          'properties': {'plusfriendUserKey': 'Pt5qtfZJhnxp'},
                                          'type': 'botUserKey'},
-                                'utterance': 'http://dn-m.talk.kakao.com/talkm/bl29h5I7Vso/58Ts9emhMRxr7mU0h9R2Fk/i_uf0s78xwnb04.png'}}
-
+                                'utterance': uri}}
 
         response = self.client.post(url, data=data, format='json')

@@ -119,7 +119,126 @@ class KakaoViewSet(viewsets.GenericViewSet):
         body = json.loads(request.body)
         utterance = body['userRequest']['utterance']
 
+        if 'http' in utterance:
+            return self.post_image(request)
+
+        try:
+            intent = body['intent']['name']
+            func = getattr(self, intent)
+            print(body)
+            return func(request)
+        except AttributeError:
+            data = {
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": "%s" % intent
+                    }
+                ]
+            }
+            return Response(status=status.HTTP_200_OK, data=data)
+
+    def retrieve(self, request, pk=None):
+        return Response(status=status.HTTP_200_OK, data=dict(ok=True))
+
+    def list_post(self, request):
+        body = json.loads(request.body)
+
+        if 'date' in body['action']['detailParams']:
+            value = json.loads(body['action']['detailParams']['date']['value'])
+            title = value['date']
+
+        elif 'period' in body['action']['detailParams']:
+            value = json.loads(body['action']['detailParams']['period']['value'])
+            title = "%s %s" % (value['from']['date'], value['to']['date'])
+
+        else:
+            title = "조회"
+
+        listItems = [dict(type="title", title=title)]
+
+        for remember in Remember.objects.order_by('-created_at')[:3]:
+            print(remember)
+            item = dict(type="item", title='item', description="The Chainsmokers", imageUrl=remember.image_file.url)
+            listItems.append(item)
+
+        print(listItems)
+
+        data = {
+            "contents": [
+                {
+                    "type": "card.list",
+                    "cards": [
+                        {
+                            "listItems": listItems,
+                            "buttons": [
+                                {
+                                    "type": "block",
+                                    "label": "좋",
+                                    "message": "좋아요 %2b 1  ab%2bcd",
+                                    "data": {
+                                    }
+                                },
+                                {
+                                    "type": "link",
+                                    "label": "재생하기",
+                                    "data":
+                                    {
+                                        "webUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "moUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "pcUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "pcCustomScheme": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "macCustomScheme": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "iosUrl": "melonios://",
+                                        "iosStoreUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "androidUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
+                                        "androidStoreUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "quickReplies": [
+                {
+                    "type": "text",
+                    "label": "리스트카드 소스",
+                    "message": "리스트카드 소스"
+                },
+                {
+                    "type": "text",
+                    "label": "데모",
+                    "message": "데모"
+                },
+                {
+                    "type": "text",
+                    "label": "텍스트카드",
+                    "message": "텍스트카드"
+                },
+                {
+                    "type": "text",
+                    "label": "커머스카드",
+                    "message": "커머스카드"
+                },
+                {
+                    "type": "text",
+                    "label": "뮤직카드",
+                    "message": "뮤직카드"
+                },
+                {
+                    "type": "text",
+                    "label": "리스트카드",
+                    "message": "리스트카드"
+                }
+            ]
+        }
+        return Response(status=status.HTTP_200_OK, data=data)
+
+    def post_image(self, request):
         entity = '통닭'
+        body = json.loads(request.body)
+        utterance = body['userRequest']['utterance']
 
         if 'http' in utterance:
             remember = Remember(image_url=utterance)
@@ -138,9 +257,3 @@ class KakaoViewSet(viewsets.GenericViewSet):
             ]
         }
         return Response(status=status.HTTP_200_OK, data=data)
-
-    def retrieve(self, request, pk=None):
-        return Response(status=status.HTTP_200_OK, data=dict(ok=True))
-
-    def list(self, request):
-        return Response(status=status.HTTP_200_OK, data=dict(ok=True))

@@ -19,4 +19,4 @@ class JoonggonaraAdmin(admin.ModelAdmin):
 
 @admin.register(Remember)
 class RememberAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['image_file', 'image_file_tag']

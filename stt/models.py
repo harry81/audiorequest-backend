@@ -1,3 +1,4 @@
+from django.utils.safestring import mark_safe
 import contextlib
 import logging
 import os
@@ -140,3 +141,9 @@ class Remember(models.Model):
 
     def __str__(self):
         return '%s' % (self.image_file.name)
+
+    def image_file_tag(self, length=50):
+        if self.image_url:
+            return mark_safe('<img src="%s" width="%d" height="%d" />' % (self.image_url, length, length))
+        else:
+            return None
