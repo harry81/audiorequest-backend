@@ -68,6 +68,7 @@ ROOT_URLCONF = 'main.urls'
 CORS_ORIGIN_WHITELIST = (
     'www.hoodpub.com',
     'backend.hoodpub.com',
+    '.serveo.net',
     'staging.hoodpub.com',
     'staging-backend.hoodpub.com',
     '.ap-northeast-2.amazonaws.com',
@@ -159,6 +160,7 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 # DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 AWS_STORAGE_BUCKET_NAME = os.getenv('S3_BUCKET_NAME', 'hmapps')
 AWS_AUDIO_STORAGE_BUCKET_NAME = 'hmapps-audio'
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")

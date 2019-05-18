@@ -210,7 +210,7 @@ def list_voices():
 def presigned_post(filename):
     ext = filename.split('.')[1]
 
-    if ext not in ['wav', 'mp3', 'flac']:
+    if ext not in ['wav', 'mp3', 'flac', 'm4a']:
         raise Exception("Audio files are acceptable")
 
     key = 'input/%s' % filename.replace(' ', '_')

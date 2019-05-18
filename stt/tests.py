@@ -8,7 +8,7 @@ from stt.utils import presigned_post
 class SttTests(APITransactionTestCase):
 
     def test_get_info(self):
-        url = '/stt/info/'
+        url = '/stt/stt/info/'
         response = self.client.get(url, format='json')
         self.assertIn('limit_anonymous', response.json())
 
@@ -23,7 +23,7 @@ class SttTests(APITransactionTestCase):
 
     def test_post_jpg(self):
         filename = 'audio-test.jpg'
-        url = '/stt/get_presigned_post/'
+        url = '/stt/stt/get_presigned_post/'
         response = self.client.get(url, dict(filename=filename))
         self.assertTrue(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -38,7 +38,7 @@ class SttTests(APITransactionTestCase):
         self.assertTrue(res.status_code, status.HTTP_204_NO_CONTENT)
 
         data = dict(key=response_post['fields']['key'], email='chharry@gmail.com')
-        url = '/stt/'
+        url = '/stt/stt/'
         response = self.client.post(url, data)
         self.assertTrue(res.status_code, status.HTTP_200_OK)
         self.assertIn('mono', response.data['message'])
@@ -54,7 +54,7 @@ class SttTests(APITransactionTestCase):
         self.assertTrue(res.status_code, status.HTTP_204_NO_CONTENT)
 
         data = dict(key=response_post['fields']['key'], email='chharry@gmail.com')
-        url = '/stt/'
+        url = '/stt/stt/'
         response = self.client.post(url, data)
         self.assertTrue(res.status_code, status.HTTP_200_OK)
         self.assertIn('성공적', response.data['message'])
@@ -70,7 +70,7 @@ class SttTests(APITransactionTestCase):
         self.assertTrue(res.status_code, status.HTTP_204_NO_CONTENT)
 
         data = dict(key=response_post['fields']['key'], email='chharry@gmail.com')
-        url = '/stt/'
+        url = '/stt/stt/'
         response = self.client.post(url, data)
         self.assertTrue(res.status_code, status.HTTP_200_OK)
         self.assertIn('mono', response.data['message'])
