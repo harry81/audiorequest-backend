@@ -1,3 +1,4 @@
+import json
 import logging
 
 from constance import config
@@ -7,8 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from main import __version__
-from stt.models import Stt, task_process
-from stt.utils import presigned_post
+from stt.models import Stt, task_process, Remember
+from stt.utils import presigned_post, detect_web_uri
 
 logger = logging.getLogger(__name__)
 
@@ -110,3 +111,36 @@ class SttViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=response)
 
         return Response(status=status.HTTP_200_OK, data=response)
+
+
+class KakaoViewSet(viewsets.GenericViewSet):
+
+    def create(self, request):
+        body = json.loads(request.body)
+        utterance = body['userRequest']['utterance']
+
+        entity = '통닭'
+
+        if 'http' in utterance:
+            remember = Remember(image_url=utterance)
+            remember.save()
+
+            uri = "gs://%s/%s" % ('pointer-bucket', remember.image_file.name)
+            annotations = detect_web_uri(uri)
+            entity = annotations.web_entities[:1][0].description
+
+        data = {
+            "contents": [
+                {
+                    "type": "text",
+                    "text": "%s" % entity
+                }
+            ]
+        }
+        return Response(status=status.HTTP_200_OK, data=data)
+
+    def retrieve(self, request, pk=None):
+        return Response(status=status.HTTP_200_OK, data=dict(ok=True))
+
+    def list(self, request):
+        return Response(status=status.HTTP_200_OK, data=dict(ok=True))

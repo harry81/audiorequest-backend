@@ -1,16 +1,22 @@
 import contextlib
 import logging
+import os
 import uuid
 import wave
+from tempfile import NamedTemporaryFile
+from urllib.request import urlopen
 
 from django.conf import settings
+from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
 from django.utils import timezone
 
 from pydub import AudioSegment
 from storages.backends.s3boto3 import S3Boto3Storage
+from storages.backends.gcloud import GoogleCloudStorage
 from stt.utils import send_email, transcode, transcribe
+from versatileimagefield.fields import VersatileImageField
 from zappa.async import task
 
 AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
@@ -116,3 +122,21 @@ class Stt(models.Model):
 
         addresses = list(set([email]))
         send_email(subject='Speech to Text', to_addresses=addresses, html=self.script)
+
+
+class Remember(models.Model):
+    image_file = VersatileImageField('Image', upload_to='remember/',
+                                     storage=GoogleCloudStorage(bucket="pointer-bucket"))
+    image_url = models.URLField()
+    created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super(Remember, self).save(*args, **kwargs)
+        if self.image_url and not self.image_file:
+            img_temp = NamedTemporaryFile(delete=True)
+            img_temp.write(urlopen(self.image_url).read())
+            img_temp.flush()
+            self.image_file.save(os.path.basename(self.image_url), File(img_temp))
+
+    def __str__(self):
+        return '%s' % (self.image_file.name)

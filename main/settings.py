@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'zappa_django_utils',
     'constance',
+    'versatileimagefield',
 
     'stt',
     'joonggonara',

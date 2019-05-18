@@ -1,5 +1,5 @@
 from django.contrib import admin
-from stt.models import Stt
+from stt.models import Stt, Remember
 from joonggonara.models import Joonggonara
 
 
@@ -15,3 +15,8 @@ class JoonggonaraAdmin(admin.ModelAdmin):
     list_display = ['id', 'username', 'title', 'category', 'created_at']
     search_fields = ['title', 'category']
     readonly_fields = ['created_at']
+
+
+@admin.register(Remember)
+class RememberAdmin(admin.ModelAdmin):
+    pass
