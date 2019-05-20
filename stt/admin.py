@@ -19,4 +19,7 @@ class JoonggonaraAdmin(admin.ModelAdmin):
 
 @admin.register(Remember)
 class RememberAdmin(admin.ModelAdmin):
-    list_display = ['image_file', 'image_file_tag']
+    list_display = ['user', 'image_file', 'image_file_tag', 'tag_list']
+
+    def tag_list(self, obj):
+        return u", ".join(o.name for o in obj.tags.all())

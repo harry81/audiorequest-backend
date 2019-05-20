@@ -18,8 +18,10 @@ from pydub import AudioSegment
 from storages.backends.gcloud import GoogleCloudStorage
 from storages.backends.s3boto3 import S3Boto3Storage
 from stt.utils import send_email, transcode, transcribe
+from taggit.managers import TaggableManager
 from versatileimagefield.fields import VersatileImageField
 from zappa.async import task
+from stt.utils import detect_web_uri
 
 User = get_user_model()
 
@@ -135,6 +137,7 @@ class Remember(models.Model):
     image_url = models.URLField()
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    tags = TaggableManager()
 
     def save(self, *args, **kwargs):
         super(Remember, self).save(*args, **kwargs)
@@ -143,6 +146,13 @@ class Remember(models.Model):
             img_temp.write(urlopen(self.image_url).read())
             img_temp.flush()
             self.image_file.save(os.path.basename(self.image_url), File(img_temp))
+
+    def get_tags(self):
+        uri = "gs://%s/%s" % ('pointer-bucket', self.image_file.name)
+        annotations = detect_web_uri(uri)
+        self.tags.add(*[ele.description for ele in annotations.web_entities[:5]])
+
+        return self.tags.slugs()
 
     def __str__(self):
         return '%s' % (self.image_file.name)

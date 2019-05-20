@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 class RegisterUserMiddleware(MiddlewareMixin):
     def process_request(self, request):
+        if 'kakao' not in request.path:
+            return
+
         if not request.user.is_anonymous or (not request.body):
             return None
 

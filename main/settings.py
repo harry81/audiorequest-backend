@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'zappa_django_utils',
     'constance',
     'versatileimagefield',
+    'taggit',
 
     'stt',
     'joonggonara',

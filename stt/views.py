@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from main import __version__
 from stt.models import Stt, task_process, Remember
-from stt.utils import presigned_post, detect_web_uri
+from stt.utils import presigned_post
 
 logger = logging.getLogger(__name__)
 
@@ -159,9 +159,10 @@ class KakaoViewSet(viewsets.GenericViewSet):
         listItems = [dict(type="title", title=title)]
 
         for remember in Remember.objects.filter(user=request.user).order_by('-created_at')[:3]:
-            print(remember)
-            item = dict(type="item", title='item', description="The Chainsmokers", imageUrl=remember.image_file.url)
+            tag_names = ",".join([tag.name for tag in remember.tags.all()[:3]])
+            item = dict(type="item", title='item', description=tag_names, imageUrl=remember.image_file.url)
             listItems.append(item)
+            print(remember)
 
         print(listItems)
 
@@ -171,66 +172,9 @@ class KakaoViewSet(viewsets.GenericViewSet):
                     "type": "card.list",
                     "cards": [
                         {
-                            "listItems": listItems,
-                            "buttons": [
-                                {
-                                    "type": "block",
-                                    "label": "좋",
-                                    "message": "좋아요 %2b 1  ab%2bcd",
-                                    "data": {
-                                    }
-                                },
-                                {
-                                    "type": "link",
-                                    "label": "재생하기",
-                                    "data":
-                                    {
-                                        "webUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "moUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "pcUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "pcCustomScheme": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "macCustomScheme": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "iosUrl": "melonios://",
-                                        "iosStoreUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "androidUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264",
-                                        "androidStoreUrl": "http://www.melon.com/artist/timeline.htm?artistId=729264"
-                                    }
-                                }
-                            ]
+                            "listItems": listItems
                         }
                     ]
-                }
-            ],
-            "quickReplies": [
-                {
-                    "type": "text",
-                    "label": "리스트카드 소스",
-                    "message": "리스트카드 소스"
-                },
-                {
-                    "type": "text",
-                    "label": "데모",
-                    "message": "데모"
-                },
-                {
-                    "type": "text",
-                    "label": "텍스트카드",
-                    "message": "텍스트카드"
-                },
-                {
-                    "type": "text",
-                    "label": "커머스카드",
-                    "message": "커머스카드"
-                },
-                {
-                    "type": "text",
-                    "label": "뮤직카드",
-                    "message": "뮤직카드"
-                },
-                {
-                    "type": "text",
-                    "label": "리스트카드",
-                    "message": "리스트카드"
                 }
             ]
         }
@@ -244,12 +188,10 @@ class KakaoViewSet(viewsets.GenericViewSet):
         if 'http' in utterance:
             remember = Remember(image_url=utterance, user=request.user)
             remember.save()
-
-            uri = "gs://%s/%s" % ('pointer-bucket', remember.image_file.name)
-            annotations = detect_web_uri(uri)
-            entity = ", ".join([ele.description for ele in annotations.web_entities[:5]])
+            entity = remember.get_tags()
 
         print(entity)
+
         data = {
             "contents": [
                 {
