@@ -1,9 +1,12 @@
 import requests
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITransactionTestCase
 
-from stt.utils import presigned_post
 from stt.models import Remember
+from stt.utils import presigned_post
+
+User = get_user_model()
 
 
 class SttTests(APITransactionTestCase):
@@ -109,6 +112,39 @@ class KakaoTests(APITransactionTestCase):
 
         response = self.client.post(url, data=data, format='json')
 
+    def test_list_post(self):
+        url = '/api/kakao/'
+        data = {'action': {'clientExtra': None,
+                           'detailParams': {'date': {'groupName': 'period',
+                                                     'origin': '내일',
+                                                     'value': '{"dateTag": "tomorrow", '
+                                                     '"dateHeadword": null, "month": '
+                                                     'null, "year": null, "date": '
+                                                     '"2019-05-21", "day": null}'}},
+                           'id': '5cdfbf425f38dd5d3dfb3a34',
+                           'name': 'request to hoodpub',
+                           'params': {'date': '{"dateTag": "tomorrow", "dateHeadword": null, '
+                                      '"month": null, "year": null, "date": '
+                                      '"2019-05-21", "day": null}'}},
+                'bot': {'id': '5cdfbded384c5578c43cc447!', 'name': 'local-hoodpub'},
+                'contexts': [],
+                'intent': {'extra': {'reason': {'code': 1, 'message': 'OK'}},
+                           'id': '5cdfc5b8384c5578c43cc46a',
+                           'name': 'list_post'},
+                'userRequest': {
+                    'block': {'id': '5cdfc5b8384c5578c43cc46a',
+                              'name': 'list_post'},
+                    'lang': 'kr',
+                    'params': {'ignoreMe': 'true', 'surface': 'Mini'},
+                    'timezone': 'Asia/Seoul',
+                    'user': {'id': 'c0e84fe0abf9fcb43cfe5b2fedd1696f573c826ce797800e0bf25aac0652bf175c',
+                             'properties': {
+                                 'botUserKey': 'c0e84fe0abf9fcb43cfe5b2fedd1696f573c826ce797800e0bf25aac0652bf175c'},
+                             'type': 'botUserKey'},
+                    'utterance': '내일 보여줘'}}
+
+        response = self.client.post(url, data=data, format='json')
+
     def test_post_image(self):
         uri = 'http://dn-m.talk.kakao.com/talkm/bl29h5I7Vso/58Ts9emhMRxr7mU0h9R2Fk/i_uf0s78xwnb04.png'
         url = '/api/kakao/'
@@ -131,4 +167,7 @@ class KakaoTests(APITransactionTestCase):
                                          'type': 'botUserKey'},
                                 'utterance': uri}}
 
+        cnt = User.objects.all().count()
         response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(cnt < User.objects.all().count())

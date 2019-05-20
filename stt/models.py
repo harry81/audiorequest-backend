@@ -1,4 +1,3 @@
-from django.utils.safestring import mark_safe
 import contextlib
 import logging
 import os
@@ -8,17 +7,22 @@ from tempfile import NamedTemporaryFile
 from urllib.request import urlopen
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 from pydub import AudioSegment
-from storages.backends.s3boto3 import S3Boto3Storage
 from storages.backends.gcloud import GoogleCloudStorage
+from storages.backends.s3boto3 import S3Boto3Storage
 from stt.utils import send_email, transcode, transcribe
 from versatileimagefield.fields import VersatileImageField
 from zappa.async import task
+
+User = get_user_model()
+
 
 AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
 logger = logging.getLogger(__name__)
@@ -130,6 +134,7 @@ class Remember(models.Model):
                                      storage=GoogleCloudStorage(bucket="pointer-bucket"))
     image_url = models.URLField()
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super(Remember, self).save(*args, **kwargs)

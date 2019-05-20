@@ -114,6 +114,7 @@ class SttViewSet(viewsets.ViewSet):
 
 
 class KakaoViewSet(viewsets.GenericViewSet):
+    puthentication_classes = ()
 
     def create(self, request):
         body = json.loads(request.body)
@@ -157,7 +158,7 @@ class KakaoViewSet(viewsets.GenericViewSet):
 
         listItems = [dict(type="title", title=title)]
 
-        for remember in Remember.objects.order_by('-created_at')[:3]:
+        for remember in Remember.objects.filter(user=request.user).order_by('-created_at')[:3]:
             print(remember)
             item = dict(type="item", title='item', description="The Chainsmokers", imageUrl=remember.image_file.url)
             listItems.append(item)
@@ -241,13 +242,14 @@ class KakaoViewSet(viewsets.GenericViewSet):
         utterance = body['userRequest']['utterance']
 
         if 'http' in utterance:
-            remember = Remember(image_url=utterance)
+            remember = Remember(image_url=utterance, user=request.user)
             remember.save()
 
             uri = "gs://%s/%s" % ('pointer-bucket', remember.image_file.name)
             annotations = detect_web_uri(uri)
-            entity = annotations.web_entities[:1][0].description
+            entity = ", ".join([ele.description for ele in annotations.web_entities[:5]])
 
+        print(entity)
         data = {
             "contents": [
                 {
