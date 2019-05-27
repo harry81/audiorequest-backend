@@ -145,6 +145,13 @@ class KakaoViewSet(viewsets.GenericViewSet):
     def list_post(self, request):
         body = json.loads(request.body)
 
+        # 입력된 사진이 없다면 사용자에게 등록을 요구한다.
+        if not Remember.objects.filter(user=request.user).order_by('-created_at'):
+            data = {"contents": [
+                dict(type='text', text="사진을 입력해 주세요")
+            ]}
+            return Response(status=status.HTTP_200_OK, data=data)
+
         if 'date' in body['action']['detailParams']:
             value = json.loads(body['action']['detailParams']['date']['value'])
             title = value['date']
@@ -154,34 +161,54 @@ class KakaoViewSet(viewsets.GenericViewSet):
             title = "%s %s" % (value['from']['date'], value['to']['date'])
 
         else:
-            title = "조회"
+            title = "보자"
 
-        listItems = [dict(type="title", title=title)]
+        listItems = []
 
-        for remember in Remember.objects.filter(user=request.user).order_by('-created_at')[:3]:
-            tag_names = ",".join([tag.name for tag in remember.tags.all()[:3]])
-            item = dict(type="item", title='item', description=tag_names, imageUrl=remember.image_file.url)
+        for remember in Remember.objects.filter(user=request.user).order_by('-created_at')[:5]:
+            tag_names = ", ".join([tag.name for tag in remember.tags.all()[:3]])
+            when = remember.created_at.strftime('%y-%m-%d %H %P')
+            item = dict(type="item", title="%s" % tag_names, description=when, imageUrl=remember.image_file.url,
+                        link={"web": remember.image_file.url})
             listItems.append(item)
-            print(remember)
 
         print(listItems)
+        data = {
+            "version": "2.0",
+            "template":
+            {
+                "outputs": [
+                    {
+                        "type": "listCard",
+                        "cards": [
+                            {
+                                "listItems": listItems
+                            }
+                        ]
+                    }
+                ]}
+        }
 
         data = {
-            "contents": [
-                {
-                    "type": "card.list",
-                    "cards": [
-                        {
-                            "listItems": listItems
+            "version": "2.0",
+            "template": {
+                "outputs": [
+                    {
+                        "listCard": {
+                            "header": {
+                                "title": title,
+                                "imageUrl": "http://k.kakaocdn.net/dn/xsBdT/btqqIzbK4Hc/F39JI8XNVDMP9jPvoVdxl1/2x1.jpg"
+                            },
+                            "items": listItems
                         }
-                    ]
-                }
-            ]
+                    }
+                ]
+            }
         }
         return Response(status=status.HTTP_200_OK, data=data)
 
     def post_image(self, request):
-        entity = '통닭'
+        entity = 'hoodpub'
         body = json.loads(request.body)
         utterance = body['userRequest']['utterance']
 
@@ -196,8 +223,14 @@ class KakaoViewSet(viewsets.GenericViewSet):
             "contents": [
                 {
                     "type": "text",
-                    "text": "%s" % entity
+                    "text": "%s" % ", ".join([ele for ele in entity])
                 }
             ]
+        }
+        return Response(status=status.HTTP_200_OK, data=data)
+
+    def show_version(self, request):
+        data = {
+            "contents": [dict(type='text', text=__version__)]
         }
         return Response(status=status.HTTP_200_OK, data=data)
