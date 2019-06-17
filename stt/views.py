@@ -3,12 +3,13 @@ import logging
 
 from constance import config
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from main import __version__
-from stt.models import Stt, task_process, Remember
+from stt.models import Remember, Stt, task_process
 from stt.utils import presigned_post
 
 logger = logging.getLogger(__name__)
@@ -167,12 +168,12 @@ class KakaoViewSet(viewsets.GenericViewSet):
 
         for remember in Remember.objects.filter(user=request.user).order_by('-created_at')[:5]:
             tag_names = ", ".join([tag.name for tag in remember.tags.all()[:3]])
-            when = remember.created_at.strftime('%y-%m-%d %H %P')
-            item = dict(type="item", title="%s" % tag_names, description=when, imageUrl=remember.image_file.url,
+            when = timezone.localtime(remember.created_at).strftime('%y-%m-%d %I%P')
+            item = dict(type="item", title="%s" % tag_names, description=when,
+                        imageUrl=remember.image_file.thumbnail['250x250'].url,
                         link={"web": remember.image_file.url})
             listItems.append(item)
 
-        print(listItems)
         data = {
             "version": "2.0",
             "template":
@@ -216,8 +217,6 @@ class KakaoViewSet(viewsets.GenericViewSet):
             remember = Remember(image_url=utterance, user=request.user)
             remember.save()
             entity = remember.get_tags()
-
-        print(entity)
 
         data = {
             "contents": [
