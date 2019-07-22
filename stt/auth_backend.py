@@ -11,7 +11,11 @@ logger = logging.getLogger(__name__)
 class KakaoAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         body = json.loads(request.body)
-        username = body['userRequest']['user']['id']
+        try:
+            username = body['userRequest']['user']['id']
+        except KeyError as e:
+            print(e)
+            return (None, None)
 
         defaults = dict(username=username)
 

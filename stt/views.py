@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from main import __version__
 from stt.models import Remember, Stt, task_process
-from stt.utils import presigned_post
+from stt.utils import presigned_post, send_email
 
 logger = logging.getLogger(__name__)
 
@@ -233,3 +233,11 @@ class KakaoViewSet(viewsets.GenericViewSet):
             "contents": [dict(type='text', text=__version__)]
         }
         return Response(status=status.HTTP_200_OK, data=data)
+
+
+class DogViewSet(viewsets.ViewSet):
+
+    def create(self, request):
+        send_email(**request.data)
+
+        return Response(status=status.HTTP_200_OK)
