@@ -20,16 +20,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='stt',
             name='uuid',
-            field=models.SlugField(default=uuid.uuid4),
+            field=models.SlugField(default=uuid.uuid4, unique=True),
             preserve_default=True,
         ),
         migrations.RunPython(gen_uuid),
 
-        migrations.AlterField(
-            model_name='stt',
-            name='uuid',
-            field=models.SlugField(default=uuid.uuid4, unique=True),
-        ),
         migrations.AlterField(
             model_name='stt',
             name='lang_code',
