@@ -14,7 +14,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from pydub import AudioSegment
 from storages.backends.gcloud import GoogleCloudStorage
 from storages.backends.s3boto3 import S3Boto3Storage
 from stt.utils import send_email, transcode, transcribe
@@ -25,8 +24,6 @@ from stt.utils import detect_web_uri
 
 User = get_user_model()
 
-
-AudioSegment.converter = settings.AUDIO_CONVERTER_PATH
 logger = logging.getLogger(__name__)
 
 

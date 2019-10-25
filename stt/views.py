@@ -5,7 +5,8 @@ from constance import config
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from main import __version__
@@ -241,3 +242,10 @@ class DogViewSet(viewsets.ViewSet):
         send_email(**request.data)
 
         return Response(status=status.HTTP_200_OK)
+
+
+@permission_classes((AllowAny, ))
+class PugViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        return Response(status=status.HTTP_200_OK, data=dict(ok=True))

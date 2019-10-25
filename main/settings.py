@@ -171,6 +171,8 @@ sentry_sdk.init(
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT= os.path.join(BASE_DIR,'static')
+
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
@@ -187,7 +189,5 @@ CONSTANCE_CONFIG = {
 GAC_FILENAME = 'gac.json'
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GAC_FILENAME
-AUDIO_CONVERTER_PATH = 'bin/ffmpeg'
-AUDIO_FFPROBE_PATH = 'bin/ffprobe'
 AUDIO_EXT = ['wav', 'flac']
 DEFAULT_EMAIL_ADDRESS = "chharry@gmail.com"

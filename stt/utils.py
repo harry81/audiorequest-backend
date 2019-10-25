@@ -17,30 +17,6 @@ client = speech.SpeechClient()
 logger = logging.getLogger(__name__)
 
 
-def download_GAC():
-    print("### download_GAC")
-
-    if not os.path.exists(settings.GAC_FILENAME):
-        s3.Bucket('hmapps').download_file(GAC_PATH, settings.GAC_FILENAME)
-
-
-def download_ffmpeg():
-    print("### download ffmpeg")
-    convert_path = settings.AUDIO_CONVERTER_PATH
-    ffprobe_path = settings.AUDIO_FFPROBE_PATH
-
-    if not os.path.exists('bin'):
-        os.mkdir('bin')
-
-    for ele in [convert_path, ffprobe_path]:
-        if not os.path.exists(ele):
-            s3.Bucket('hmapps').download_file(ele, ele)
-
-            st = os.stat(ele)
-            os.chmod(ele, st.st_mode | stat.S_IEXEC)
-            logging.info("Copy file to %s" % ele)
-
-
 def transcode(in_file, out_file=None):
     """
     Submit a job to transcode a file by its filename. The
