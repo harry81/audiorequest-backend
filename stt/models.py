@@ -19,7 +19,6 @@ from storages.backends.s3boto3 import S3Boto3Storage
 from stt.utils import send_email, transcode, transcribe
 from taggit.managers import TaggableManager
 from versatileimagefield.fields import VersatileImageField
-from zappa.async import task
 from stt.utils import detect_web_uri
 
 User = get_user_model()
@@ -27,7 +26,6 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-@task
 def task_process(pk=None, email=None, **kwargs):
     try:
         stt = Stt.objects.get(pk=pk)
