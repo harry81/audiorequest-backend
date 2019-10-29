@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from main import __version__
 from stt.models import Remember, Stt, task_process
 from stt.utils import presigned_post, send_email
+from water.krawler import Hani
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ class SttViewSet(viewsets.ViewSet):
 
 
 class KakaoViewSet(viewsets.GenericViewSet):
-    puthentication_classes = ()
+    puthentication_classes = ('stt.auth_backend.KakaoAuthentication', )
 
     def create(self, request):
         body = json.loads(request.body)
@@ -248,4 +249,10 @@ class DogViewSet(viewsets.ViewSet):
 class PugViewSet(viewsets.ViewSet):
 
     def list(self, request):
-        return Response(status=status.HTTP_200_OK, data=dict(ok=True))
+        hani = Hani()
+
+        articles = []
+        for cnt in range(0, 5):
+            articles.append(hani.article(index=cnt))
+
+        return Response(status=status.HTTP_200_OK, data=articles)

@@ -28,7 +28,21 @@ SECRET_KEY = '1h0&lx4!+=xw4r(n1v2q88zb!8a49l=v@u^ehi5eywzb+&^5hw'
 # SECURITY WARNING: don't run with debu gturned on in production!
 DEBUG = os.getenv("AWS_SESSION_TOKEN") == None
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.elasticbeanstalk.com', '.hoodpub.com']
+
+CORS_ORIGIN_WHITELIST = (
+    'www.hoodpub.com',
+    'backend.hoodpub.com',
+    'staging.hoodpub.com',
+    'staging-backend.hoodpub.com',
+    '.ap-northeast-2.amazonaws.com',
+    '.hoodpub.com',
+    'https://hmapps.hoodpub.com',
+    'www.hoodpub.com.s3-website.ap-northeast-2.amazonaws.com',
+    'localhost',
+    'localhost:3000',
+)
+
 
 
 # Application definition
@@ -53,13 +67,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'stt.middleware.RegisterUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -68,21 +81,6 @@ ROOT_URLCONF = 'main.urls'
 
 # CORS Config
 
-CORS_ORIGIN_WHITELIST = (
-    'www.hoodpub.com',
-    'backend.hoodpub.com',
-    '.serveo.net',
-    'staging.hoodpub.com',
-    'staging-backend.hoodpub.com',
-    '.ap-northeast-2.amazonaws.com',
-    '.hoodpub.com',
-    'www.hoodpub.com.s3-website.ap-northeast-2.amazonaws.com',
-    'localhost',
-    'localhost:4200',
-    '172.16.1.151:4200'
-)
-
-ALLOWED_HOSTS = CORS_ORIGIN_WHITELIST
 
 
 TEMPLATES = [
@@ -157,7 +155,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'stt.auth_backend.KakaoAuthentication'
     )
 }
 

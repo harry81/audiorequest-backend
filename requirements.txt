@@ -1,5 +1,5 @@
 Django==2.1.7
-zappa==0.47.1
+zappa==0.48.2
 djangorestframework==3.9.0
 django-cors-headers==2.4.0
 django-storages==1.7.1
@@ -15,9 +15,9 @@ Fabric3==1.14.post1
 pydub==0.23.1
 pycodestyle==2.5.0
 vulture==1.0
--e git://github.com/harry81/naver_api@master#egg=naver_api
 lxml==4.3.2
 requests==2.21.0
 django-versatileimagefield==1.10
 google-cloud-vision==0.36.0
 django-taggit==1.1.0
+krawler-api==0.10.1
