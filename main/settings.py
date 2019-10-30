@@ -37,7 +37,7 @@ CORS_ORIGIN_WHITELIST = (
     'staging-backend.hoodpub.com',
     '.ap-northeast-2.amazonaws.com',
     '.hoodpub.com',
-    'https://hmapps.hoodpub.com',
+    'hmapps.hoodpub.com',
     'www.hoodpub.com.s3-website.ap-northeast-2.amazonaws.com',
     'localhost',
     'localhost:3000',

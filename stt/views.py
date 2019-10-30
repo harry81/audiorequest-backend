@@ -12,7 +12,9 @@ from rest_framework.response import Response
 from main import __version__
 from stt.models import Remember, Stt, task_process
 from stt.utils import presigned_post, send_email
-from water.krawler import Hani
+from water.krawler import Chosun, Hani
+
+krawler_modules = dict(hani=Hani, chosun=Chosun)
 
 logger = logging.getLogger(__name__)
 
@@ -249,10 +251,12 @@ class DogViewSet(viewsets.ViewSet):
 class PugViewSet(viewsets.ViewSet):
 
     def list(self, request):
-        hani = Hani()
+        dest = request.query_params.get('dest', 'hani')
+        cls = krawler_modules[dest]
+        krawler = cls()
 
         articles = []
         for cnt in range(0, 5):
-            articles.append(hani.article(index=cnt))
+            articles.append(krawler.article(index=cnt))
 
         return Response(status=status.HTTP_200_OK, data=articles)
