@@ -12,11 +12,37 @@ from rest_framework.response import Response
 from main import __version__
 from stt.models import Remember, Stt, task_process
 from stt.utils import presigned_post, send_email
-from water.krawler import Chosun, Hani
+from water.krawler import Chosun, Hani, KakaoBook
 
 krawler_modules = dict(hani=Hani, chosun=Chosun)
 
 logger = logging.getLogger(__name__)
+
+
+
+@permission_classes((AllowAny, ))
+class BookViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        book = KakaoBook()
+        title = request.query_params.get('title')
+        res = book.search(query=title)
+        return Response(status=status.HTTP_200_OK, data=res['documents'])
+
+
+@permission_classes((AllowAny, ))
+class PugViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        dest = request.query_params.get('dest', 'hani')
+        cls = krawler_modules[dest]
+        krawler = cls()
+
+        articles = []
+        for cnt in range(0, 5):
+            articles.append(krawler.article(index=cnt))
+
+        return Response(status=status.HTTP_200_OK, data=articles)
 
 
 class SttViewSet(viewsets.ViewSet):

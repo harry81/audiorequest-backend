@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 import boto3
@@ -13,6 +14,11 @@ s3_client = boto3.client('s3', 'us-east-1')
 GAC_PATH = 'google_application/feisty-bindery-117412-c4cf0e8c8240.json'
 client = speech.SpeechClient()
 logger = logging.getLogger(__name__)
+
+ssm = boto3.client('ssm', region_name='ap-northeast-2')
+kakao_key = ssm.get_parameter(Name='KAKAO_KEY', WithDecryption=True)
+KAKAO_KEY = kakao_key['Parameter']['Value']
+os.environ['KAKAO_KEY'] = KAKAO_KEY
 
 
 def transcode(in_file, out_file=None):
