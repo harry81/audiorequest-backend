@@ -28,7 +28,8 @@ SECRET_KEY = '1h0&lx4!+=xw4r(n1v2q88zb!8a49l=v@u^ehi5eywzb+&^5hw'
 # SECURITY WARNING: don't run with debu gturned on in production!
 DEBUG = os.getenv("AWS_SESSION_TOKEN") == None
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.elasticbeanstalk.com', '.hoodpub.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 's3-website.ap-northeast-2.amazonaws.com',
+                 '.elasticbeanstalk.com', '.hoodpub.com']
 
 CORS_ORIGIN_WHITELIST = (
     'www.hoodpub.com',

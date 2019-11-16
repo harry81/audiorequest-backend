@@ -19,7 +19,6 @@ krawler_modules = dict(hani=Hani, chosun=Chosun)
 logger = logging.getLogger(__name__)
 
 
-
 @permission_classes((AllowAny, ))
 class BookViewSet(viewsets.ViewSet):
 
@@ -27,7 +26,9 @@ class BookViewSet(viewsets.ViewSet):
         book = KakaoBook()
         title = request.query_params.get('title')
         res = book.search(query=title)
-        return Response(status=status.HTTP_200_OK, data=res['documents'])
+        data = res.json()['documents']
+        data = [ele for ele in data if ele['thumbnail']]
+        return Response(status=status.HTTP_200_OK, data=data)
 
 
 @permission_classes((AllowAny, ))
