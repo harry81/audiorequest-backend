@@ -58,6 +58,17 @@ def stt_frontend_deploy(force=False, env='staging'):
               format(**conf_frontend[env]))
 
 
+def books_deploy(force=False, env='staging'):
+    with prefix("cd ../books.hoodpub.com;. %s/bin/activate" % DEV_VIRTUAL_ENV):
+        local("yarn build ")
+        local("aws s3 rm s3://books.hoodpub.com --recursive".format(**conf_frontend[env]))
+        local("aws s3 sync build s3://books.hoodpub.com --recursive  --acl public-read".
+              format(**conf_frontend[env]))
+        local("aws configure set preview.cloudfront true")
+        local("aws cloudfront create-invalidation --distribution-id E3VC1JWMD0NBTY --paths '/*'".
+              format(**conf_frontend[env]))
+
+
 def stt_deploy(force=False, env='staging', component='both'):
     kwargs = dict(force=force, env=env)
 

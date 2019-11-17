@@ -12,14 +12,14 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 
 from storages.backends.gcloud import GoogleCloudStorage
 from storages.backends.s3boto3 import S3Boto3Storage
-from stt.utils import send_email, transcode, transcribe
+from stt.utils import detect_web_uri, send_email, transcode, transcribe
 from taggit.managers import TaggableManager
 from versatileimagefield.fields import VersatileImageField
-from stt.utils import detect_web_uri
 
 User = get_user_model()
 
@@ -36,6 +36,34 @@ def task_process(pk=None, email=None, **kwargs):
         stt.transcribe(**kwargs)
 
     stt.notify(email=email)
+
+
+class Book(models.Model):
+    title = models.CharField(max_length=256, null=True, blank=True)
+    link = models.URLField(max_length=256, null=True, blank=True)
+    image = models.URLField(max_length=256, null=True, blank=True)
+    author = models.CharField(max_length=64, null=True, blank=True)
+    price = models.IntegerField(default=0, null=True, blank=True)
+    page = models.IntegerField(default=0, null=True, blank=True)
+    publisher = models.CharField(max_length=8, null=True, blank=True)
+    pubdate = models.CharField(max_length=12, null=True, blank=True)
+    isbn = models.CharField(max_length=32, null=True, blank=True)
+    description = models.CharField(max_length=512, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.isbn = strip_tags(self.isbn)
+        super(Book, self).save(*args, **kwargs)
+
+
+class Shelf(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    status = models.CharField(max_length=8, null=True, blank=True)
+
+
+class BookProgress(models.Model):
+    book = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class Stt(models.Model):

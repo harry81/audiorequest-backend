@@ -9,6 +9,19 @@ from stt.utils import presigned_post
 User = get_user_model()
 
 
+class ShelfTests(APITransactionTestCase):
+
+    def setUp(self):
+        User.objects.create(username='hi')
+
+    def test_book(self):
+        self.assertEqual(True, True)
+        url = '/api/shelf/'
+        data = dict(isbn="8975601994 9788975601996")
+        res = self.client.post(url, data=data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+
 class SttTests(APITransactionTestCase):
 
     def test_get_info(self):

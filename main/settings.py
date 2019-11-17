@@ -39,6 +39,7 @@ CORS_ORIGIN_WHITELIST = (
     '.ap-northeast-2.amazonaws.com',
     '.hoodpub.com',
     'hmapps.hoodpub.com',
+    'books.hoodpub.com',
     'www.hoodpub.com.s3-website.ap-northeast-2.amazonaws.com',
     'localhost',
     'localhost:3000',
