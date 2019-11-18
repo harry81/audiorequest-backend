@@ -15,9 +15,14 @@ class ShelfTests(APITransactionTestCase):
         User.objects.create(username='hi')
 
     def test_book(self):
-        self.assertEqual(True, True)
         url = '/api/shelf/'
         data = dict(isbn="8975601994 9788975601996")
+        res = self.client.post(url, data=data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_bookprogress(self):
+        url = '/api/shelf/1/bookprogress/'
+        data = dict(shelf_id=1, page=20)
         res = self.client.post(url, data=data, format='json')
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 

@@ -1,6 +1,21 @@
 from django.contrib import admin
-from stt.models import Stt, Remember
+from stt.models import Stt, Remember, Book, Shelf, BookProgress
 from joonggonara.models import Joonggonara
+
+
+@admin.register(Book)
+class BookAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Shelf)
+class ShelfAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(BookProgress)
+class BookProgressAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Stt)

@@ -44,26 +44,35 @@ class Book(models.Model):
     image = models.URLField(max_length=256, null=True, blank=True)
     author = models.CharField(max_length=64, null=True, blank=True)
     price = models.IntegerField(default=0, null=True, blank=True)
-    page = models.IntegerField(default=0, null=True, blank=True)
-    publisher = models.CharField(max_length=8, null=True, blank=True)
+    publisher = models.CharField(max_length=256, null=True, blank=True)
     pubdate = models.CharField(max_length=12, null=True, blank=True)
     isbn = models.CharField(max_length=32, null=True, blank=True)
     description = models.CharField(max_length=512, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.isbn = strip_tags(self.isbn)
+        self.title = strip_tags(self.title)
         super(Book, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return '%s' % (self.title)
 
 
 class Shelf(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     book = models.ForeignKey(Book, on_delete=models.CASCADE, blank=True, null=True)
+    page = models.IntegerField(default=0, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
     status = models.CharField(max_length=8, null=True, blank=True)
 
+    def __str__(self):
+        return '%s %s' % (self.book, self.user)
+
 
 class BookProgress(models.Model):
-    book = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    shelf = models.ForeignKey(Shelf, on_delete=models.CASCADE, blank=True, null=True)
+    page = models.IntegerField(default=0, null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
 
 class Stt(models.Model):

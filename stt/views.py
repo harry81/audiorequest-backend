@@ -15,7 +15,7 @@ from stt.models import Book, BookProgress, Remember, Shelf, Stt, task_process
 from stt.utils import presigned_post, send_email
 from water.krawler import Chosun, Hani, KakaoBook, NaverBook
 
-from .serializers import ShelfSerializer
+from .serializers import ShelfSerializer, BookProgressSerializer
 
 krawler_modules = dict(hani=Hani, chosun=Chosun)
 
@@ -41,26 +41,35 @@ class ShelfViewSet(viewsets.ModelViewSet):
     queryset = Shelf.objects.all()
     serializer_class = ShelfSerializer
 
-    def list(self, request):
-        return Response(status=status.HTTP_200_OK, data={})
-
     def create(self, request):
         """
-        book 생성 if not exists
-
-        shelf 생성
+        a) book 생성 if not exists
+        b) shelf 생성
         """
+        # a)
         books = NaverBook()
         isbn = request.data.get('isbn')
         res = books.search(query=isbn)
-
         fields = [ele.name for ele in Book._meta.get_fields()]
 
         data = res.json()['items'][0]
         data = {ele: data[ele] for ele in data if ele in fields}
         book, _ = Book.objects.get_or_create(isbn=isbn, defaults=data)
+
+        # b)
         shelf, _ = Shelf.objects.get_or_create(book=book, user=User.objects.first())
 
+        return Response(status=status.HTTP_201_CREATED)
+
+
+@permission_classes((AllowAny, ))
+class BookProgressViewSet(viewsets.ModelViewSet):
+
+    queryset = BookProgress.objects.all()
+    serializer_class = BookProgressSerializer
+
+    def create(self, request, shelf_pk, *args, **kwargs):
+        BookProgress.objects.create(shelf_id=shelf_pk, page=20)
         return Response(status=status.HTTP_201_CREATED)
 
 

@@ -16,9 +16,11 @@ client = speech.SpeechClient()
 logger = logging.getLogger(__name__)
 
 ssm = boto3.client('ssm', region_name='ap-northeast-2')
-kakao_key = ssm.get_parameter(Name='KAKAO_KEY', WithDecryption=True)
-KAKAO_KEY = kakao_key['Parameter']['Value']
-os.environ['KAKAO_KEY'] = KAKAO_KEY
+
+os.environ['KAKAO_KEY'] = ssm.get_parameter(Name='KAKAO_KEY', WithDecryption=True)['Parameter']['Value']
+os.environ['NAVER_CLIENT_ID'] = ssm.get_parameter(Name='NAVER_CLIENT_ID', WithDecryption=True)['Parameter']['Value']
+os.environ['NAVER_CLIENT_SECRET'] = ssm.get_parameter(
+    Name='NAVER_CLIENT_SECRET', WithDecryption=True)['Parameter']['Value']
 
 
 def transcode(in_file, out_file=None):
