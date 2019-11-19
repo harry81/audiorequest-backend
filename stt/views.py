@@ -41,6 +41,10 @@ class ShelfViewSet(viewsets.ModelViewSet):
     queryset = Shelf.objects.all()
     serializer_class = ShelfSerializer
 
+    def get_queryset(self):
+        qs = super(ShelfViewSet, self).get_queryset().order_by('-created_at')
+        return qs
+
     def create(self, request):
         """
         a) book 생성 if not exists
