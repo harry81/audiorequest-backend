@@ -1,6 +1,6 @@
-Django==2.1.7
+django>=2.1.11
 zappa==0.48.2
-djangorestframework==3.9.0
+djangorestframework>=3.9.1
 django-cors-headers==2.4.0
 django-storages==1.7.1
 google-api-core==1.7.0

@@ -42,6 +42,8 @@ class ShelfViewSet(viewsets.ModelViewSet):
     serializer_class = ShelfSerializer
 
     def get_queryset(self):
+        if not self.request.session.session_key:
+            self.request.session.save()
         qs = super(ShelfViewSet, self).get_queryset().order_by('-created_at')
         return qs
 

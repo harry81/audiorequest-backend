@@ -15,7 +15,7 @@ class ShelfSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Shelf
-        fields = ['id', 'page', 'user', 'status', 'book']
+        fields = ['id', 'page', 'user', 'status', 'book', 'created_at']
 
 
 class BookProgressSerializer(serializers.ModelSerializer):
