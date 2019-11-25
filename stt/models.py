@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
+from django.db.models import Max
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -68,9 +69,14 @@ class Shelf(models.Model):
     def __str__(self):
         return '%s %s' % (self.book, self.user)
 
+    def current_page(self):
+        if self.bookprogresses:
+            return self.bookprogresses.aggregate(Max('page'))['page__max']
+        return 0
+
 
 class BookProgress(models.Model):
-    shelf = models.ForeignKey(Shelf, on_delete=models.CASCADE, blank=True, null=True)
+    shelf = models.ForeignKey(Shelf, related_name='bookprogresses', on_delete=models.CASCADE, blank=True, null=True)
     page = models.IntegerField(default=0, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 

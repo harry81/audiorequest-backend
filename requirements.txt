@@ -1,4 +1,4 @@
-django>=2.1.11
+Django==2.1.7
 zappa==0.48.2
 djangorestframework>=3.9.1
 django-cors-headers==2.4.0
