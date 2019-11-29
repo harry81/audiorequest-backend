@@ -70,7 +70,7 @@ class Shelf(models.Model):
         return '%s %s' % (self.book, self.user)
 
     def current_page(self):
-        if self.bookprogresses:
+        if self.bookprogresses.exists():
             return self.bookprogresses.aggregate(Max('page'))['page__max']
         return 0
 
@@ -79,6 +79,9 @@ class BookProgress(models.Model):
     shelf = models.ForeignKey(Shelf, related_name='bookprogresses', on_delete=models.CASCADE, blank=True, null=True)
     page = models.IntegerField(default=0, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 class Stt(models.Model):

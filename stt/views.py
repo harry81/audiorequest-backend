@@ -73,7 +73,8 @@ class BookProgressViewSet(viewsets.ModelViewSet):
     serializer_class = BookProgressSerializer
 
     def create(self, request, shelf_pk, *args, **kwargs):
-        BookProgress.objects.create(shelf_id=shelf_pk, page=20)
+        page = request.data.get('page')
+        BookProgress.objects.create(shelf_id=shelf_pk, page=page)
         return Response(status=status.HTTP_201_CREATED)
 
 

@@ -3,6 +3,10 @@ from stt.models import Stt, Remember, Book, Shelf, BookProgress
 from joonggonara.models import Joonggonara
 
 
+class BookProgressInline(admin.TabularInline):
+    model = BookProgress
+
+
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
     pass
@@ -10,7 +14,7 @@ class BookAdmin(admin.ModelAdmin):
 
 @admin.register(Shelf)
 class ShelfAdmin(admin.ModelAdmin):
-    pass
+    inlines = [BookProgressInline]
 
 
 @admin.register(BookProgress)
